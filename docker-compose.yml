@@ -1,0 +1,53 @@
+# Local development stack. Start everything with `make up`.
+# Redis and the Celery worker join in M1.
+
+services:
+  db:
+    # Official Postgres 16 with the pgvector extension pre-installed.
+    image: pgvector/pgvector:0.8.0-pg16
+    environment:
+      POSTGRES_USER: researchpilot
+      POSTGRES_PASSWORD: researchpilot
+      POSTGRES_DB: researchpilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U researchpilot -d researchpilot"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot
+      TEST_DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot_test
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app  # live code reload
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      API_PROXY_TARGET: http://api:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - web_node_modules:/app/node_modules  # keep Linux node_modules out of the macOS folder
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  web_node_modules:

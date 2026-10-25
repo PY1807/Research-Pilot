@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# Data that never goes into git
+storage/
+uploads/
+*.pdf
+.cache/
+models/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

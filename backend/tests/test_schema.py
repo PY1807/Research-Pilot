@@ -44,3 +44,22 @@ async def test_top_level_tables_have_owner_column():
         owned = {r[0] for r in rows}
 
     assert {"research_projects", "source_documents", "research_runs"} <= owned
+
+
+async def test_chunks_have_vector_column_with_hnsw_index():
+    async with SessionLocal() as session:
+        column_type = await session.scalar(
+            text(
+                "SELECT format_type(atttypid, atttypmod) FROM pg_attribute "
+                "WHERE attrelid = 'document_chunks'::regclass AND attname = 'embedding'"
+            )
+        )
+        index_def = await session.scalar(
+            text(
+                "SELECT indexdef FROM pg_indexes "
+                "WHERE indexname = 'ix_document_chunks_embedding_hnsw'"
+            )
+        )
+
+    assert column_type == "vector(384)"
+    assert "hnsw" in index_def and "vector_cosine_ops" in index_def

@@ -7,6 +7,7 @@ from typing import BinaryIO
 
 from fastapi import APIRouter, Form, HTTPException, Query, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -168,3 +169,18 @@ async def list_chunks(
         .offset(offset)
     )
     return rows.all()
+
+
+@router.get("/sources/{source_id}/file/", response_class=FileResponse)
+async def source_file(source_id: uuid.UUID, session: SessionDep, user: CurrentUser):
+    """The original PDF, shown inline so the browser's viewer opens it. Append
+    `#page=N` to the URL to jump to a page."""
+    source = await _get_owned_source(session, source_id, user)
+    if source.file_path is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "This source has no stored file.")
+    return FileResponse(
+        absolute_path(source.file_path),
+        media_type="application/pdf",
+        filename=f"{source.title}.pdf",
+        content_disposition_type="inline",
+    )

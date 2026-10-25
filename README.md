@@ -394,4 +394,4 @@ Likely new too, explained the same way unless the user says they already know it
 2. Run `make up` and `make test` to confirm the app is in the state the tracker claims.
 3. Continue from **Next action**. If it's blocked on the user, ask for that first.
 4. Keep the working set small: touch only the current milestone's modules, and read files when needed instead of loading the whole repo.
-5. At the end of the session: tick checkboxes, update the milestone status, **Next action**, **Blocked on**, and the session log, add or extend `DECISIONS.md` entries for any new tech introduced, then commit.
+5. At the end of the session: tick checkboxes, update the milestone status, **Next action**, **Blocked on**, and the session log, add or extend `DECISIONS.md` entries for any new tech introduced, add the session's problems to the **Problems solved** section of `DECISIONS.md` (problem, simple fix, technical fix), then commit.

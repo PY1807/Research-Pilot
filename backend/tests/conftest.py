@@ -11,6 +11,8 @@ os.environ["DATABASE_URL"] = os.environ.get(
     "postgresql+asyncpg://researchpilot:researchpilot@localhost:5433/researchpilot_test",
 )
 os.environ["STORAGE_DIR"] = tempfile.mkdtemp(prefix="researchpilot-test-storage-")
+# A fast keyword-hash embedder instead of the real model: no download, deterministic.
+os.environ["EMBEDDING_PROVIDER"] = "hash"
 
 import pytest  # noqa: E402
 from alembic.config import Config  # noqa: E402

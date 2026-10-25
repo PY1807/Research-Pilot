@@ -63,6 +63,8 @@ async def test_ingestion_stores_chunks_with_correct_page_numbers(session, dev_us
     assert {c.page_number for c in chunks} == {1, 2, 3}
     marker_chunks = [c for c in chunks if "PAGE-TWO-MARKER" in c.text]
     assert marker_chunks and all(c.page_number == 2 for c in marker_chunks)
+    assert all(c.embedding is not None and len(c.embedding) == 384 for c in chunks)
+    assert source.meta["embedding_model"] == "hash-test-embedder"
 
 
 async def test_running_ingestion_twice_does_not_duplicate_chunks(session, dev_user):

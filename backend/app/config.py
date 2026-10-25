@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     chunk_overlap: int = 200
     chunk_min_size: int = 200
 
+    # Embeddings. "fastembed" runs the real model locally; "hash" is a fast fake for tests.
+    # Changing the model's vector size needs a migration (document_chunks.embedding).
+    embedding_provider: str = "fastembed"
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_batch_size: int = 32
+    embedding_cache_dir: str = ".cache/fastembed"
+
     # Until auth lands in M8, every request acts as this single seeded user.
     dev_user_email: str = "dev@researchpilot.local"
 

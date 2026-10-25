@@ -1,4 +1,4 @@
-"""Ingestion pipeline: PDF file -> page text -> chunks -> rows in document_chunks."""
+"""Ingestion pipeline: PDF file -> page text -> chunks -> embeddings -> document_chunks rows."""
 
 import asyncio
 import logging
@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db.models import DocumentChunk, IngestionStatus, SourceDocument
+from app.embeddings import get_embedder
 from app.sources.chunking import PageText, chunk_pages, clean_page_text
 from app.sources.storage import absolute_path
 
@@ -71,6 +72,10 @@ async def ingest_source(session: AsyncSession, source_id: uuid.UUID) -> None:
             min_size=settings.chunk_min_size,
         )
 
+        # Embedding is the slow, CPU-heavy step (~0.1 s per chunk); run it in a thread.
+        embedder = get_embedder()
+        vectors = await asyncio.to_thread(embedder.embed_documents, [c.text for c in chunks])
+
         await session.execute(delete(DocumentChunk).where(DocumentChunk.source_id == source.id))
         session.add_all(
             DocumentChunk(
@@ -78,8 +83,9 @@ async def ingest_source(session: AsyncSession, source_id: uuid.UUID) -> None:
                 chunk_index=c.index,
                 page_number=c.page_number,
                 text=c.text,
+                embedding=vector,
             )
-            for c in chunks
+            for c, vector in zip(chunks, vectors, strict=True)
         )
         source.status = IngestionStatus.READY
         source.meta = {
@@ -92,6 +98,7 @@ async def ingest_source(session: AsyncSession, source_id: uuid.UUID) -> None:
                 "overlap": settings.chunk_overlap,
                 "min_size": settings.chunk_min_size,
             },
+            "embedding_model": embedder.name,
         }
         await session.commit()
         logger.info("Ingested source %s: %d pages, %d chunks", source.id, len(pages), len(chunks))

@@ -4,7 +4,7 @@ Ownership rule: top-level records (projects, sources, runs) carry `user_id`. Chi
 (chunks, evidence, reports, events) inherit ownership through their parent's foreign key.
 
 Columns that depend on later milestones are added then, through new migrations:
-- document_chunks.embedding (pgvector) in M2, once the embedding model and its size are fixed
+- document_chunks.embedding (pgvector) added in M2
 - document_chunks full-text search column in M3
 """
 
@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     DateTime,
@@ -20,6 +21,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Identity,
+    Index,
     Integer,
     String,
     Text,
@@ -30,6 +32,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+from app.embeddings import EMBEDDING_DIM
 
 
 def str_enum(enum_cls: type[enum.Enum]) -> Enum:
@@ -117,7 +120,19 @@ class SourceDocument(TimestampMixin, Base):
 
 class DocumentChunk(TimestampMixin, Base):
     __tablename__ = "document_chunks"
-    __table_args__ = (UniqueConstraint("source_id", "chunk_index"),)
+    __table_args__ = (
+        UniqueConstraint("source_id", "chunk_index"),
+        # HNSW: a graph index for fast approximate nearest-neighbour search. vector_cosine_ops
+        # matches the <=> (cosine distance) operator used by search. m = links per node,
+        # ef_construction = how hard to look for good links while building (pgvector defaults).
+        Index(
+            "ix_document_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     source_id: Mapped[uuid.UUID] = mapped_column(
@@ -127,6 +142,8 @@ class DocumentChunk(TimestampMixin, Base):
     page_number: Mapped[int | None] = mapped_column(Integer)
     section: Mapped[str | None] = mapped_column(String(500))
     text: Mapped[str] = mapped_column(Text)
+    # Null until the chunk has been embedded.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
     meta: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
 

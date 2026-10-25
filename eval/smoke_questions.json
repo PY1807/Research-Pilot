@@ -1,0 +1,66 @@
+{
+  "version": "smoke-v1",
+  "description": "M2 smoke test: 10 paraphrased questions over the RAG vs long-context corpus. A question is a hit if a top-k result comes from the expected paper on one of the listed pages. Pages were found by locating each fact in the corpus; questions avoid copying the papers' wording. M3 replaces this with a 30-40 question benchmark labelled at passage level.",
+  "questions": [
+    {
+      "id": "q01",
+      "question": "Does where the answer sits inside a long prompt change how accurately a model responds?",
+      "source": "02_liu2023_lost_in_the_middle",
+      "pages": [1, 2, 8, 9, 10, 15, 16]
+    },
+    {
+      "id": "q02",
+      "question": "How can a system choose, for each query, between retrieval and reading the full context, in order to save cost?",
+      "source": "04_li2024_rag_or_long_context_self_route",
+      "pages": [1, 4, 7, 8]
+    },
+    {
+      "id": "q03",
+      "question": "Does keeping retrieved chunks in the order they appear in the original document improve RAG answers?",
+      "source": "06_yu2024_in_defense_of_rag",
+      "pages": [1, 2, 3, 4]
+    },
+    {
+      "id": "q04",
+      "question": "Can a model with a short context window plus retrieval match a model whose context window was extended?",
+      "source": "03_xu2023_retrieval_meets_long_context",
+      "pages": [1, 2, 3, 5]
+    },
+    {
+      "id": "q05",
+      "question": "What changes if the retriever works with large units of several thousand tokens instead of short paragraphs?",
+      "source": "11_jiang2024_longrag",
+      "pages": [1, 2, 3, 4, 7, 11]
+    },
+    {
+      "id": "q06",
+      "question": "Why can giving a long-context model more retrieved passages make its answers worse?",
+      "source": "12_jin2024_long_context_llms_meet_rag",
+      "pages": [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 15, 16, 17, 18, 21]
+    },
+    {
+      "id": "q07",
+      "question": "Do synthetic needle-in-a-haystack tests predict how well a model handles real long-context tasks?",
+      "source": "14_yen2024_helmet",
+      "pages": [1, 10, 29, 37]
+    },
+    {
+      "id": "q08",
+      "question": "Which kinds of reasoning do long-context models still struggle with when replacing databases and SQL?",
+      "source": "05_lee2024_loft_lclm_subsume_retrieval",
+      "pages": [1, 3, 5, 8]
+    },
+    {
+      "id": "q09",
+      "question": "Beyond what context length do most models stop giving consistently accurate answers in RAG?",
+      "source": "07_leng2024_long_context_rag_performance",
+      "pages": [1, 2, 4]
+    },
+    {
+      "id": "q10",
+      "question": "How much extra does it cost to put the whole document collection in the prompt instead of retrieving a few passages?",
+      "source": "16_2026_token_tax_rag_vs_long_context",
+      "pages": [1, 2, 3, 4, 8]
+    }
+  ]
+}

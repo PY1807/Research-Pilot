@@ -35,3 +35,20 @@ One entry per working session: decision · reason · alternative · result · ne
 - **Result:** 16 papers, 338 pages → 1,279 chunks (avg 1,027 characters). Exit test: 3 random chunks verified against `pdftotext` output of the claimed page; all found only on that page.
 - **Known limitations (for later):** figure and table text is extracted as plain text (axis labels, numbers); reference lists are chunked like body text and may add noise to search. Revisit in M3 if the benchmark shows it hurts. Math symbols can glue onto words (`documentsz`).
 - **Note:** the arXiv API now redirects HTTP to HTTPS; the M7 connector must use HTTPS.
+
+## 2026-10-25 — M2 Semantic search + first UI
+
+- **Decision:** `BAAI/bge-small-en-v1.5` via FastEmbed (ONNX), 384 dimensions.
+  **Reason:** 512-token input fits our chunks; free and local; no PyTorch. `all-MiniLM-L6-v2` would truncate at 256.
+- **Decision:** Embedding behind an `Embedder` adapter; `HashEmbedder` in tests.
+  **Reason:** No model download in CI; real model swappable later.
+- **Decision:** HNSW index (`m=16`, `ef_construction=64`, cosine) plus `hnsw.iterative_scan = strict_order` for project-filtered queries.
+- **Decision:** UI gets a real visual system now (Tailwind v4 tokens, light/dark), not deferred to M9.
+  **Reason:** Low cost now; better to demo.
+- **Result:** 1,279 chunks embedded (~8 min on CPU). Search latency 66–180 ms. 35 backend + 7 frontend tests.
+- **Smoke test (`eval/smoke_questions.json`, 10 paraphrased questions):** hit rate @5 = 7/10, @1 = 5/10.
+  - q06 miss = labelling too narrow (Liu p3 and Leng p2 also answer it).
+  - q01 miss = paraphrase gap ("where the answer sits" vs "position of relevant information").
+  - q02 miss = generic RAG introductions outrank the Self-Route method (p4).
+  - These become M3 benchmark cases; baseline recorded as-is.
+- **Known issue:** CPU oversubscription during embedding (2 worker processes × 8 ONNX threads).

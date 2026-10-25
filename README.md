@@ -11,11 +11,11 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M2 — Semantic search + minimal UI (not started) |
-| **Next action** | Start M2 with the embeddings + pgvector concept brief. Open question for the user: proper visual style in M2, or plain until M9? |
-| **Blocked on (user)** | LLM decision (needed by M4) |
+| **Current milestone** | M3 — Hybrid search + evaluation harness (not started) |
+| **Next action** | User reviews `eval/smoke_questions.json`; then start M3 with the full-text search + RRF + retrieval-metrics concept brief |
+| **Blocked on (user)** | Benchmark labelling session in M3 (~2–3 h) · LLM decision (needed by M4) |
 | **Test corpus** | 16 papers on RAG vs long-context LLMs in `data/corpus/` (local only, never committed; list in `data/corpus/README.md`) |
-| **Last session** | 2026-10-25: M1 done (exit test passed): corpus ingested, 1,279 chunks |
+| **Last session** | 2026-10-25: M2 done (exit test passed, 7/10 @5): embeddings, semantic search, first real UI |
 
 ### Milestone status
 
@@ -23,7 +23,7 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 |---|---|---|---|
 | M0 | Setup | ✅ done | 1 |
 | M1 | PDF ingestion | ✅ done | 1 |
-| M2 | Semantic search + minimal UI | ⬜ | 1 |
+| M2 | Semantic search + minimal UI | ✅ done | 1 |
 | M3 | Hybrid search + eval harness | ⬜ | 1 |
 | M4 | Cited answers + experiments A–C | ⬜ | 1 |
 | M5 | Reranking (cuttable) | ⬜ | 0.5 |
@@ -41,6 +41,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-10-25 | M2 | bge-small embeddings (FastEmbed), pgvector HNSW, search API, PDF endpoint, Tailwind UI (projects, upload, live status, search), smoke test 7/10 @5, 42 tests, DECISIONS (embeddings, pgvector) | Review smoke questions; start M3 |
 | 2026-10-25 | M1 | Redis + Celery worker, projects/sources API, page-aware extraction + chunking, `make ingest-corpus` / `make reingest`, 25 tests, DECISIONS (Redis, Celery). Fixed tiny chunks and ligatures found on real data | Start M2 |
 | 2026-10-25 | M0 | Scaffold, Docker stack, 8-table schema + first Alembic migration, tests, CI, DECISIONS.md (Docker, Alembic). Fixed Docker Desktop setup issues; DB on host port 5433 | Push; start M1 |
 
@@ -86,7 +87,7 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 
 | Plain idea | What's under the hood |
 |---|---|
-| The librarian | Search: embeddings + keyword search in PostgreSQL/pgvector |
+| The librarian | Search: each passage is turned into a "meaning fingerprint" (an embedding); a question finds the passages with the closest fingerprints (pgvector). Keyword search joins in M3 |
 | The research assistant | The agent: an LLM that plans and calls tools, within hard limits |
 | The fact-checker | Citation check: each claim compared against its cited passage |
 | The notebook | Run trace: every step saved so you can see how the answer was built |
@@ -221,10 +222,10 @@ POST /api/runs/{id}/cancel/         cancel run
 - **Exit test:** uploading the corpus produces chunks with correct page numbers, checked on 3 random chunks.
 
 ### M2 — Semantic search + minimal UI
-- [ ] Local embedding model behind `Embedder`; embeddings stored in pgvector with an HNSW index
-- [ ] `retrieve(query, k)` service + endpoint
-- [ ] UI: create project, upload PDFs, see ingestion status, run a search, click a result to open the PDF page
-- [ ] 🧑 User writes or approves 10 test questions
+- [x] Local embedding model behind `Embedder`; embeddings stored in pgvector with an HNSW index
+- [x] `retrieve(query, k)` service + endpoint
+- [x] UI: create project, upload PDFs, see ingestion status, run a search, click a result to open the PDF page
+- [x] 🧑 10 smoke questions drafted (`eval/smoke_questions.json`); user review pending
 - **Exit test:** for most of the 10 questions, a relevant passage appears in the top 5 and its link opens the right page.
 
 ### M3 — Hybrid search + evaluation harness 🧑

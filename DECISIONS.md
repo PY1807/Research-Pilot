@@ -144,6 +144,87 @@ What we give up: Celery is big, its configuration has many sharp edges, and it's
 - `make worker-logs`, then upload a PDF and watch `Task sources.ingest[...] received` and `succeeded in 0.8s`.
 - `make reingest` re-queues every source; watch the worker process them all again.
 
+
+---
+
+## Embeddings: BAAI/bge-small-en-v1.5 via FastEmbed (added in M2)
+
+**What it does in ResearchPilot:**
+Turns every chunk, and every search question, into a list of 384 numbers (a vector) that captures its meaning. Search then finds chunks whose vectors point in nearly the same direction as the question's.
+
+**Why it helps / what it adds:**
+- **Finds meaning, not just words.** "Why do models miss facts in the middle of a long prompt?" finds the *Lost in the Middle* paper even though the wording differs.
+- **Free and local.** Runs on the CPU inside our containers: no API key, no per-request cost, no data leaves the machine.
+- **Fits our chunks.** Reads up to 512 tokens; our chunks are about 300.
+- **Swappable.** The app only talks to an `Embedder` interface, so a hosted model can replace it later without touching ingestion or search.
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| `all-MiniLM-L6-v2` | Very popular and fast, but stops reading at 256 word pieces, so it would silently cut off the end of our ~300-token chunks |
+| `sentence-transformers` library | Same models, but needs PyTorch (1–2 GB, with unused GPU libraries on CI's Intel Linux). FastEmbed runs the same model through ONNX Runtime (~50 MB) |
+| Hosted embeddings (OpenAI, Voyage, Cohere) | Often higher quality, but cost money per call, need an API key, and send our text to a third party. Can be swapped in via the adapter if M3 shows we need it |
+| Larger local models (bge-base, bge-large) | Better quality, but 3–10× slower on CPU. A candidate experiment for M3 |
+
+What we give up: a small model is weaker on loose paraphrases. The M2 smoke test shows this: one question phrased as "where the answer sits inside a long prompt" missed the paper that calls it "position of relevant information".
+
+**How it works underneath:**
+1. **Tokenize:** the text is split into word pieces (`retriev` + `##al`), each mapped to an ID.
+2. **Transformer:** 12 layers of self-attention let every token look at every other token, so each token's vector reflects its meaning *in context*.
+3. **Pooling:** the special first token (`[CLS]`), trained to summarise the whole text, becomes the text's single vector.
+4. **Normalize:** the vector is scaled to length 1, so only its direction matters.
+- The model was trained on huge numbers of (question, relevant passage) pairs to place matching pairs close together and push non-matching pairs apart (contrastive learning).
+- bge models expect a short instruction in front of *queries* but not passages; FastEmbed's `query_embed` adds it.
+- **Similarity** is the cosine of the angle between two vectors: 1 means same direction (same meaning), around 0 means unrelated.
+
+**Where to look:** `backend/app/embeddings.py`, `backend/app/sources/ingestion.py` (embedding step), `backend/app/main.py` (model preloaded at startup)
+
+**Try it yourself:** search in the UI for a question phrased in your own words, then open the linked page and check whether the passage really answers it.
+
+---
+
+## pgvector and the HNSW index (added in M2)
+
+**What it does in ResearchPilot:**
+Stores each chunk's embedding in a `vector(384)` column in Postgres, next to its text and page number, and finds the closest chunks to a question with one SQL query.
+
+**Why it helps / what it adds:**
+- **One database for everything.** Vectors live in the same row as the text, page, source, and owner, so search can filter by project and join to source titles in a single query.
+- **No extra service.** No separate vector database to run, secure, back up, or keep in sync.
+- **Fast enough to scale.** The HNSW index answers searches in milliseconds (66–180 ms end to end here, including embedding the question).
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Pinecone | Fully managed and very scalable, but a paid external service, and every chunk's text and metadata would need syncing to it |
+| Qdrant / Weaviate / Milvus | Dedicated vector databases with more search features. One more service to run and keep consistent with Postgres |
+| FAISS | A fast in-memory library, not a database: no persistence, no filtering by project, no transactions |
+| No index (exact search) | Fine at 1,279 chunks, but compares the question against *every* row, so it slows down linearly as the corpus grows |
+
+What we give up: dedicated vector databases can be faster at hundreds of millions of vectors and offer more tuning. At our scale Postgres is the simpler, safer choice; the blueprint says to reconsider only if measurements justify it.
+
+**How it works underneath:**
+- **Distance operators:** `<=>` is cosine distance (what we use), `<->` is straight-line (L2) distance, `<#>` is negative inner product. Our score is `1 - cosine distance`.
+- **HNSW (Hierarchical Navigable Small World)** is a graph index. When a vector is added, it is linked to its nearest neighbours. Upper layers contain a few vectors with long links (motorways); the bottom layer contains all of them with short links (local streets).
+- **Searching:** start at the top layer, greedily hop towards the question's vector, drop a layer, refine, and repeat. Only a small fraction of vectors is ever compared.
+- **It's approximate.** It can occasionally miss a true nearest neighbour; `m` (links per node, 16), `ef_construction` (effort while building, 64), and `ef_search` (effort while searching) trade speed for accuracy.
+- **Filtering gotcha:** the index finds neighbours across *all* projects, then `WHERE project_id = …` removes other projects' chunks, which could leave fewer than k results. pgvector 0.8's **iterative scan** (`SET LOCAL hnsw.iterative_scan = strict_order`) keeps walking the graph until k rows survive the filter.
+- `vector_cosine_ops` in the index definition must match the operator in queries (`<=>`); otherwise Postgres can't use the index.
+
+**Where to look:** `backend/app/db/models.py` (`embedding` column and HNSW index), `backend/alembic/versions/*_add_chunk_embeddings.py`, `backend/app/retrieval/service.py`
+
+**Try it yourself (in `make psql`):**
+```sql
+\d document_chunks          -- see the vector(384) column and the hnsw index
+SELECT vector_dims(embedding), left(embedding::text, 60) FROM document_chunks LIMIT 1;
+-- The 3 chunks most similar to one chunk from Lost in the Middle:
+WITH q AS (SELECT c.embedding FROM document_chunks c JOIN source_documents s ON s.id = c.source_id
+           WHERE s.title LIKE '02_%' AND c.page_number = 1 LIMIT 1)
+SELECT s.title, c.page_number, round((1 - (c.embedding <=> q.embedding))::numeric, 3) AS similarity
+FROM document_chunks c JOIN source_documents s ON s.id = c.source_id, q
+ORDER BY c.embedding <=> q.embedding LIMIT 4;
+```
+
 ---
 
 # Problems solved
@@ -272,3 +353,50 @@ Real problems hit while building, and how each was fixed. Each entry has the pro
 - **Simple fix:** searched arXiv directly for the topic, then looked up each exact paper elsewhere, instead of trusting a fuzzy search.
 - **Technical fix:** arXiv now redirects `http://` to `https://`, and `curl` without `-L` saved the empty redirect, so we switched to `https://export.arxiv.org/api/query`. Then batch-looked-up citation counts in OpenAlex by exact DOI (`10.48550/arxiv.<id>`), and re-verified the final 16 IDs and titles through arXiv `id_list`.
 - **Caveat found:** OpenAlex undercounts citations for arXiv preprints (it counts the arXiv copy only), so papers were chosen by their role in the debate, not by those numbers.
+
+## Session 1, continued (2026-10-25): M2
+
+### Embeddings and search
+
+**23. Picking a model that wouldn't cut off our chunks**
+- **Problem:** the most popular small model, `all-MiniLM-L6-v2`, only reads 256 word pieces; our chunks are about 300 tokens.
+- **Simple fix:** chose a model that reads up to 512 tokens.
+- **Technical fix:** `BAAI/bge-small-en-v1.5` (384 dimensions, 512-token limit). Input beyond the limit is silently truncated, so the limit must exceed the chunk size.
+
+**24. Avoiding a 1–2 GB PyTorch install**
+- **Problem:** `sentence-transformers` requires PyTorch, which is huge on Linux and slows Docker builds and CI.
+- **Simple fix:** used a lighter library that runs the same model.
+- **Technical fix:** FastEmbed runs the model's ONNX export through ONNX Runtime (~50 MB). The model itself (65 MB) downloads once into `backend/.cache/fastembed`, which is git-ignored.
+
+**25. Tests must not download a model**
+- **Problem:** CI would download 65 MB on every run, and real embeddings make tests slow and less predictable.
+- **Simple fix:** tests use a fake embedder that's instant and always gives the same answer.
+- **Technical fix:** `HashEmbedder` hashes each word into one of 384 dimensions and normalizes the vector, so texts that share words still score as similar. Selected with `EMBEDDING_PROVIDER=hash` in `tests/conftest.py`. The adapter (`Embedder` interface) makes the swap invisible to the rest of the code.
+
+**26. Alembic forgot to import pgvector**
+- **Problem:** the autogenerated migration used `pgvector.sqlalchemy.vector.VECTOR` without importing `pgvector`, so it would crash with `NameError`.
+- **Simple fix:** reading the generated migration caught it before running; the missing import was added.
+- **Technical fix:** added `import pgvector.sqlalchemy` to the migration, and to `alembic/script.py.mako` so future migrations include it automatically. Verified with upgrade → downgrade → upgrade and `alembic check`.
+
+**27. Filtered vector search could return too few results (prevented)**
+- **Problem:** the HNSW index searches across all projects; filtering to one project afterwards can leave fewer than k results.
+- **Simple fix:** tell the index to keep searching until it has enough results from the right project.
+- **Technical fix:** `SET LOCAL hnsw.iterative_scan = strict_order` before the query (pgvector 0.8). `SET LOCAL` applies only to the current transaction.
+
+**28. The first search took 2.2 seconds**
+- **Problem:** the API loaded the embedding model on the first search request.
+- **Simple fix:** load the model when the API starts, before any user arrives.
+- **Technical fix:** a FastAPI `lifespan` hook calls `get_embedder()` (cached with `lru_cache`) at startup, skipped in tests. First search after a restart: 2.2 s → 0.18 s.
+
+**29. Embedding the corpus was slower than expected (logged, not fixed)**
+- **Problem:** re-embedding 1,279 chunks took about 8 minutes, against an estimate of 2–3.
+- **Likely cause:** 2 worker processes each run ONNX Runtime with threads for all 8 CPUs, so they compete for the same cores.
+- **Plan:** if it matters (larger corpora, M7 arXiv ingestion), limit ONNX threads per process or run one worker process for embedding.
+
+### Testing and verification
+
+**30. Reading smoke-test misses instead of trusting the number**
+- **Problem:** the M2 smoke test scored 7/10. The number alone doesn't say *why* 3 questions missed.
+- **Simple fix:** looked at what search actually returned for each miss.
+- **Findings:** one "miss" was a labelling mistake (other papers genuinely answer the question, but only one paper was listed); two were real retrieval failures (a loose paraphrase, and generic introduction text crowding out a specific method).
+- **What changes:** M3's benchmark allows several relevant passages per question; hybrid search (M3) and reranking (M5) target the two real failure types. The labels were not edited to raise the score.

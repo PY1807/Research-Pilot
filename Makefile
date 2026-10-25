@@ -27,8 +27,9 @@ revision: ## Autogenerate a migration from model changes: make revision m="add e
 seed: ## Create the development user (safe to re-run)
 	docker compose exec api python -m app.scripts.seed_dev_user
 
-test: ## Run backend tests against the separate test database
+test: ## Run backend tests (separate test database) and frontend tests
 	docker compose exec api pytest -q
+	docker compose exec web npm test
 
 lint: ## Lint backend and frontend
 	docker compose exec api ruff check .

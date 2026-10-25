@@ -1,36 +1,74 @@
+@import 'tailwindcss';
+
+/* Research-notebook palette: cool paper, ink-blue accent, highlighter for citations.
+   Raw values live here so dark mode only has to swap them. */
 :root {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  color: #1b2230;
-  background: #f6f7f9;
+  --paper: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1a2130;
+  --muted: #5b6577;
+  --line: #dde1e8;
+  --accent: #2e55c7;
+  --accent-soft: #e5ebfa;
+  --mark: #fff0a3;
+  --mark-ink: #4a3d00;
+  --ok: #1f7a4d;
+  --warn: #9a5b00;
+  --bad: #b3261e;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #e4e8ef;
-    background: #11151c;
+    --paper: #10141b;
+    --surface: #171c25;
+    --ink: #e3e7ee;
+    --muted: #98a2b3;
+    --line: #2a313d;
+    --accent: #85a5ff;
+    --accent-soft: #1e2943;
+    --mark: #4a4114;
+    --mark-ink: #ffe98a;
+    --ok: #5fcf96;
+    --warn: #f0b45a;
+    --bad: #ff8a80;
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-mark: var(--mark);
+  --color-mark-ink: var(--mark-ink);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
 body {
-  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.shell {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 48px 16px;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
-.tagline {
-  opacity: 0.7;
-  margin-top: -8px;
-}
-
-.status {
-  margin-top: 24px;
-}
-
-.error {
-  color: #c0392b;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

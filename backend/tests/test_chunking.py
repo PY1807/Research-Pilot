@@ -1,6 +1,12 @@
 import pytest
 
-from app.sources.chunking import PageText, chunk_pages, clean_page_text
+from app.sources.chunking import (
+    PageText,
+    chunk_pages,
+    clean_page_text,
+    prose_ratio,
+    remove_repeated_lines,
+)
 from tests.pdfs import sentences
 
 
@@ -88,3 +94,44 @@ def test_empty_pages_are_skipped():
 def test_overlap_must_be_smaller_than_size():
     with pytest.raises(ValueError):
         chunk_pages([PageText(1, "x")], size=100, overlap=100)
+
+
+def test_repeated_headers_footers_and_page_numbers_are_removed():
+    pages = [
+        f"Published as a conference paper at ICLR 2024\nUnique content {i}.\n{i}"
+        for i in range(1, 6)
+    ]
+
+    cleaned = remove_repeated_lines(pages)
+
+    assert cleaned == [f"Unique content {i}." for i in range(1, 6)]
+
+
+def test_lines_on_only_a_few_pages_are_kept():
+    pages = ["Table 1: results\nA", "Table 1: results\nB", "C", "D", "E", "F"]
+
+    assert remove_repeated_lines(pages) == pages
+
+
+def test_short_documents_are_left_alone():
+    assert remove_repeated_lines(["Header\nA", "Header\nB"]) == ["Header\nA", "Header\nB"]
+
+
+def test_prose_ratio_separates_text_from_number_tables():
+    assert prose_ratio("23.5 14.0 5.8 46.1 35.5 27.4 16.9 1.9") == 0.0
+    assert prose_ratio("Long context models read whole books at once.") > 0.6
+
+
+def test_number_only_chunks_can_be_dropped():
+    pages = [PageText(1, "Real sentence about retrieval quality."), PageText(2, "1.0 2.0 3.0 4.0")]
+
+    kept = chunk_pages(pages, min_prose_ratio=0.2)
+
+    assert [c.page_number for c in kept] == [1]
+    assert [c.index for c in kept] == [0]
+
+
+def test_numbered_content_lines_are_not_mistaken_for_headers():
+    pages = [f"Header\nTable {i} shows the results.\nPage {i} of 5" for i in range(1, 6)]
+
+    assert remove_repeated_lines(pages) == [f"Table {i} shows the results." for i in range(1, 6)]

@@ -1,6 +1,6 @@
 """Run the M2 smoke questions against the live search API and report hits.
 
-Usage: python3 eval/smoke_test.py [--k 5] [--project <id>]
+Usage: python3 eval/smoke_test.py [--k 5] [--mode hybrid|semantic|keyword] [--project <id>]
 Uses only the standard library, so it runs from the host without the backend venv.
 """
 
@@ -21,6 +21,7 @@ def get(path: str):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--k", type=int, default=5)
+    parser.add_argument("--mode", default="hybrid", choices=["hybrid", "semantic", "keyword"])
     parser.add_argument("--project", help="project id (default: the most recent project)")
     args = parser.parse_args()
 
@@ -29,7 +30,7 @@ def main() -> None:
 
     hits = 0
     for q in spec["questions"]:
-        params = urllib.parse.urlencode({"q": q["question"], "k": args.k})
+        params = urllib.parse.urlencode({"q": q["question"], "k": args.k, "mode": args.mode})
         results = get(f"/projects/{project_id}/search/?{params}")
         rank = next(
             (
@@ -46,7 +47,7 @@ def main() -> None:
         print(f"{mark:7} {q['id']}  expected {q['source'][:34]:34}  top: {top_desc}")
 
     total = len(spec["questions"])
-    print(f"\nHit rate @{args.k}: {hits}/{total} ({hits / total:.0%})")
+    print(f"\nHit rate @{args.k} ({args.mode}): {hits}/{total} ({hits / total:.0%})")
 
 
 if __name__ == "__main__":

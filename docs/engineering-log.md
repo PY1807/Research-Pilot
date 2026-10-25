@@ -52,3 +52,22 @@ One entry per working session: decision · reason · alternative · result · ne
   - q02 miss = generic RAG introductions outrank the Self-Route method (p4).
   - These become M3 benchmark cases; baseline recorded as-is.
 - **Known issue:** CPU oversubscription during embedding (2 worker processes × 8 ONNX threads).
+
+## 2026-10-25 — M3 Hybrid search + evaluation harness
+
+- **Decision:** Keyword search with Postgres full-text search (generated `tsvector` + GIN), any-word (OR) matching, `ts_rank_cd`.
+- **Decision:** Hybrid = RRF (k=60) over the top 50 of each method; default search mode; keyword weight 1.0 (weighted RRF available).
+- **Decision:** Benchmark labels are (paper, page) pairs so they survive chunk-size changes; 37 questions (24 fact, 6 multi, 3 conflict, 4 unanswerable), draft labels pending user review via pooled review sheet.
+- **Decision:** Drop number-only chunks (`prose_ratio < 0.2`) and remove repeated headers/footers/page numbers. 1,279 → 1,202 chunks.
+- **Results (draft labels, cleaned corpus, 33 answerable questions):**
+
+  | Mode | hit@5 | mrr@10 | precision@5 | source_recall@10 | p50 ms |
+  |---|---|---|---|---|---|
+  | semantic | 0.697 | 0.442 | 0.255 | 0.745 | 24 |
+  | keyword | 0.606 | 0.401 | 0.200 | 0.664 | 27 |
+  | hybrid | 0.818 | 0.528 | 0.321 | 0.679 | 57 |
+
+- **Smoke set (10 paraphrased questions):** semantic 7/10, keyword 3/10, hybrid 5/10. Combined 43 questions: hybrid 32, semantic 30.
+- **Before vs after clean-up (hit@5):** semantic 0.636 → 0.697, keyword 0.545 → 0.606, hybrid 0.818 → 0.818.
+- **Findings:** hybrid's edge depends on query wording; multi-source/conflict source recall is low (~0.3–0.4) in all modes (diversity problem, candidate fix: MMR); search scores can't detect unanswerable questions.
+- **Next:** user reviews labels (`eval/review/benchmark_v1_review.md`), re-run `make eval` on reviewed labels; M4 needs the LLM decision.

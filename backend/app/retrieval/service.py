@@ -16,6 +16,7 @@ from typing import Literal
 from sqlalchemy import Text, cast, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db.models import DocumentChunk, IngestionStatus, SourceDocument
 from app.embeddings import get_embedder
 
@@ -125,25 +126,35 @@ async def keyword_search(
 
 
 def reciprocal_rank_fusion(
-    rankings: Sequence[Sequence[uuid.UUID]], k: int = RRF_K
+    rankings: Sequence[Sequence[uuid.UUID]],
+    k: int = RRF_K,
+    weights: Sequence[float] | None = None,
 ) -> list[tuple[uuid.UUID, float]]:
-    """Merge ranked lists using only positions: score = sum of 1 / (k + rank).
+    """Merge ranked lists using only positions: score = sum of weight / (k + rank).
 
     Scores from different methods aren't comparable (cosine ~0.8 vs ts_rank ~0.1), so
     RRF ignores them. An item ranked well by several lists rises to the top; an item
-    found by only one list still counts.
+    found by only one list still counts. `weights` lets one list count more (weighted
+    RRF); by default every list counts equally.
     """
+    weights = weights or [1.0] * len(rankings)
     scores: dict[uuid.UUID, float] = {}
-    for ranking in rankings:
+    for ranking, weight in zip(rankings, weights, strict=True):
         for rank, item in enumerate(ranking, start=1):
-            scores[item] = scores.get(item, 0.0) + 1.0 / (k + rank)
+            scores[item] = scores.get(item, 0.0) + weight / (k + rank)
     return sorted(scores.items(), key=lambda pair: pair[1], reverse=True)
 
 
 async def hybrid_search(
-    session: AsyncSession, project_id: uuid.UUID, query: str, k: int = 5
+    session: AsyncSession,
+    project_id: uuid.UUID,
+    query: str,
+    k: int = 5,
+    keyword_weight: float | None = None,
 ) -> list[SearchResult]:
-    """Semantic and keyword results merged with Reciprocal Rank Fusion."""
+    """Semantic and keyword results merged with (weighted) Reciprocal Rank Fusion."""
+    if keyword_weight is None:
+        keyword_weight = get_settings().hybrid_keyword_weight
     semantic = await semantic_search(session, project_id, query, FUSION_CANDIDATES)
     keyword = await keyword_search(session, project_id, query, FUSION_CANDIDATES)
 
@@ -152,7 +163,10 @@ async def hybrid_search(
     semantic_rank = {r.chunk_id: r.semantic_rank for r in semantic}
     keyword_rank = {r.chunk_id: r.keyword_rank for r in keyword}
 
-    fused = reciprocal_rank_fusion([[r.chunk_id for r in semantic], [r.chunk_id for r in keyword]])
+    fused = reciprocal_rank_fusion(
+        [[r.chunk_id for r in semantic], [r.chunk_id for r in keyword]],
+        weights=[1.0, keyword_weight],
+    )
     return [
         replace(
             by_id[chunk_id],

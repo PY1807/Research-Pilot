@@ -32,3 +32,11 @@ def test_consistent_middle_ranks_can_beat_a_single_first_place():
 
 def test_empty_rankings():
     assert reciprocal_rank_fusion([[], []]) == []
+
+
+def test_weights_let_one_list_count_more():
+    # A is 1st in the first list, B is 1st in the second; weighting the first wins for A.
+    fused = reciprocal_rank_fusion([[A], [B]], k=60, weights=[1.0, 0.5])
+
+    assert fused[0] == (A, pytest.approx(1 / 61))
+    assert fused[1] == (B, pytest.approx(0.5 / 61))

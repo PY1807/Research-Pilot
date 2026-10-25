@@ -11,11 +11,11 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M3 — Hybrid search + evaluation harness (not started) |
-| **Next action** | User reviews `eval/smoke_questions.json`; then start M3 with the full-text search + RRF + retrieval-metrics concept brief |
-| **Blocked on (user)** | Benchmark labelling session in M3 (~2–3 h) · LLM decision (needed by M4) |
+| **Current milestone** | M4 — Cited answers + experiments A–C (not started) |
+| **Next action** | User reviews benchmark labels in `eval/review/benchmark_v1_review.md`, then `make apply-review` + `make eval`. Then M4 (needs LLM decision) |
+| **Blocked on (user)** | Label review (~2–3 h, `eval/review/`) · LLM decision (needed by M4) |
 | **Test corpus** | 16 papers on RAG vs long-context LLMs in `data/corpus/` (local only, never committed; list in `data/corpus/README.md`) |
-| **Last session** | 2026-10-25: M2 done (exit test passed, 7/10 @5): embeddings, semantic search, first real UI |
+| **Last session** | 2026-10-25: M3 done (exit test passed): hybrid search, eval harness, 37-question benchmark (draft labels), data clean-up |
 
 ### Milestone status
 
@@ -24,7 +24,7 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 | M0 | Setup | ✅ done | 1 |
 | M1 | PDF ingestion | ✅ done | 1 |
 | M2 | Semantic search + minimal UI | ✅ done | 1 |
-| M3 | Hybrid search + eval harness | ⬜ | 1 |
+| M3 | Hybrid search + eval harness | ✅ done (labels await review) | 1 |
 | M4 | Cited answers + experiments A–C | ⬜ | 1 |
 | M5 | Reranking (cuttable) | ⬜ | 0.5 |
 | M6 | Agent core | ⬜ | 2 |
@@ -41,6 +41,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-10-25 | M3 | Full-text search + RRF hybrid (default), eval harness (`make eval`, review sheet, apply-review), benchmark-v1 (37 q, draft), header/table clean-up, weighted RRF experiment, mode toggle in UI, 69 tests, DECISIONS (hybrid, eval) | User label review; M4 |
 | 2026-10-25 | M2 | bge-small embeddings (FastEmbed), pgvector HNSW, search API, PDF endpoint, Tailwind UI (projects, upload, live status, search), smoke test 7/10 @5, 42 tests, DECISIONS (embeddings, pgvector) | Review smoke questions; start M3 |
 | 2026-10-25 | M1 | Redis + Celery worker, projects/sources API, page-aware extraction + chunking, `make ingest-corpus` / `make reingest`, 25 tests, DECISIONS (Redis, Celery). Fixed tiny chunks and ligatures found on real data | Start M2 |
 | 2026-10-25 | M0 | Scaffold, Docker stack, 8-table schema + first Alembic migration, tests, CI, DECISIONS.md (Docker, Alembic). Fixed Docker Desktop setup issues; DB on host port 5433 | Push; start M1 |
@@ -87,12 +88,12 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 
 | Plain idea | What's under the hood |
 |---|---|
-| The librarian | Search: each passage is turned into a "meaning fingerprint" (an embedding); a question finds the passages with the closest fingerprints (pgvector). Keyword search joins in M3 |
+| The librarian | Search: two librarians work together. One matches by meaning (embeddings in pgvector), the other by exact words (Postgres full-text search). Their lists are merged so passages both like rise to the top (Reciprocal Rank Fusion) |
 | The research assistant | The agent: an LLM that plans and calls tools, within hard limits |
 | The fact-checker | Citation check: each claim compared against its cited passage |
 | The notebook | Run trace: every step saved so you can see how the answer was built |
 | The mailroom | Task queue: the API drops a job in Redis and replies at once; a Celery worker picks it up and does the slow work (reading PDFs, later whole research runs) |
-| The exam | The benchmark: fixed questions with known answers, run after every change |
+| The exam | The benchmark: 37 fixed questions with labelled answer pages; `make eval` scores every search method after each change |
 
 ---
 
@@ -229,10 +230,11 @@ POST /api/runs/{id}/cancel/         cancel run
 - **Exit test:** for most of the 10 questions, a relevant passage appears in the top 5 and its link opens the right page.
 
 ### M3 — Hybrid search + evaluation harness 🧑
-- [ ] Full-text `tsvector` column + GIN index; keyword search; RRF fusion
-- [ ] `eval/` harness: versioned question set, versioned retrieval configs, Recall@k and Precision@k, latency
-- [ ] Claude drafts 30–40 benchmark questions (direct facts, multi-source, conflicting, unanswerable)
-- [ ] 🧑 **User reviews and labels the expected evidence (heaviest user task, ~2–3 h)**
+- [x] Full-text `tsvector` column + GIN index; keyword search; RRF fusion
+- [x] `eval/` harness: versioned question set, versioned retrieval configs, Recall@k and Precision@k, latency
+- [x] Claude drafts 30–40 benchmark questions (direct facts, multi-source, conflicting, unanswerable): 37 in `eval/benchmark_v1.json`
+- [x] Data clean-up measured on the benchmark: repeated headers/footers removed, number-only chunks dropped
+- [ ] 🧑 **User reviews the draft labels (`eval/review/benchmark_v1_review.md`, ~2–3 h)**
 - 🧑 **LLM decision needed before M4**
 - **Exit test:** `make eval` prints a comparison table for semantic vs hybrid search.
 

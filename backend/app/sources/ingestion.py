@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.db.models import DocumentChunk, IngestionStatus, SourceDocument
 from app.embeddings import get_embedder
-from app.sources.chunking import PageText, chunk_pages, clean_page_text
+from app.sources.chunking import PageText, chunk_pages, clean_page_text, remove_repeated_lines
 from app.sources.storage import absolute_path
 
 logger = logging.getLogger(__name__)
@@ -31,9 +31,10 @@ def extract_pages(path: Path) -> list[PageText]:
         reader = PdfReader(path)
         if reader.is_encrypted and not reader.decrypt(""):
             raise IngestionError("This PDF is password-protected. Upload an unlocked copy.")
+        raw_pages = remove_repeated_lines([page.extract_text() or "" for page in reader.pages])
         return [
-            PageText(page_number=i + 1, text=clean_page_text(page.extract_text() or ""))
-            for i, page in enumerate(reader.pages)
+            PageText(page_number=i + 1, text=clean_page_text(raw))
+            for i, raw in enumerate(raw_pages)
         ]
     except PdfReadError as exc:
         raise IngestionError(f"This file couldn't be read as a PDF ({exc}).") from exc
@@ -70,6 +71,7 @@ async def ingest_source(session: AsyncSession, source_id: uuid.UUID) -> None:
             size=settings.chunk_size,
             overlap=settings.chunk_overlap,
             min_size=settings.chunk_min_size,
+            min_prose_ratio=settings.chunk_min_prose_ratio,
         )
 
         # Embedding is the slow, CPU-heavy step (~0.1 s per chunk); run it in a thread.
@@ -97,6 +99,7 @@ async def ingest_source(session: AsyncSession, source_id: uuid.UUID) -> None:
                 "size": settings.chunk_size,
                 "overlap": settings.chunk_overlap,
                 "min_size": settings.chunk_min_size,
+                "min_prose_ratio": settings.chunk_min_prose_ratio,
             },
             "embedding_model": embedder.name,
         }

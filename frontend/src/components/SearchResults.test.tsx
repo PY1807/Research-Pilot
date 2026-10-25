@@ -10,7 +10,9 @@ const result: SearchResult = {
   source_title: 'Lost in the Middle',
   page_number: 4,
   text: 'Performance is highest when relevant information is at the start or end.',
-  score: 0.8791,
+  score: 0.03,
+  semantic_rank: 2,
+  keyword_rank: null,
 }
 
 describe('SearchResults', () => {
@@ -19,10 +21,16 @@ describe('SearchResults', () => {
 
     expect(screen.getByText('Lost in the Middle')).toBeInTheDocument()
     expect(screen.getByText(/relevant information is at the start/)).toBeInTheDocument()
-    expect(screen.getByText('score 0.879')).toBeInTheDocument()
+    expect(screen.getByText('meaning #2')).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /p\. 4/ })
     expect(link).toHaveAttribute('href', '/api/sources/s1/file/#page=4')
     expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('shows both ranks for a passage found by meaning and keywords', () => {
+    render(<SearchResults results={[{ ...result, semantic_rank: 3, keyword_rank: 1 }]} />)
+
+    expect(screen.getByText('meaning #3 · keywords #1')).toBeInTheDocument()
   })
 
   it('explains an empty result list', () => {

@@ -1,0 +1,2741 @@
+{
+ "meta": {
+  "benchmark": "benchmark-v1",
+  "review_status": "draft",
+  "run_at": "2026-10-25 16:34 UTC",
+  "question_counts": {
+   "fact": 24,
+   "multi": 6,
+   "conflict": 3,
+   "unanswerable": 4
+  },
+  "corpus": {
+   "project": "RAG vs long-context LLMs",
+   "sources": 16,
+   "chunks": 1279
+  },
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "chunking": {
+   "size": 1200,
+   "overlap": 200,
+   "min_size": 200
+  },
+  "rrf_k": 60,
+  "fusion_candidates": 50,
+  "depth": 10
+ },
+ "results": {
+  "semantic": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.458,
+     "hit@5": 0.636,
+     "precision@5": 0.236,
+     "page_recall@5": 0.366,
+     "source_recall@5": 0.573,
+     "hit@10": 0.848,
+     "precision@10": 0.209,
+     "page_recall@10": 0.555,
+     "source_recall@10": 0.735
+    },
+    "by_type": {
+     "conflict": {
+      "mrr@10": 0.27,
+      "hit@5": 0.333,
+      "precision@5": 0.133,
+      "page_recall@5": 0.111,
+      "source_recall@5": 0.111,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.389,
+      "source_recall@10": 0.417
+     },
+     "fact": {
+      "mrr@10": 0.558,
+      "hit@5": 0.75,
+      "precision@5": 0.283,
+      "page_recall@5": 0.465,
+      "source_recall@5": 0.75,
+      "hit@10": 0.875,
+      "precision@10": 0.229,
+      "page_recall@10": 0.66,
+      "source_recall@10": 0.875
+     },
+     "multi": {
+      "mrr@10": 0.153,
+      "hit@5": 0.333,
+      "precision@5": 0.1,
+      "page_recall@5": 0.094,
+      "source_recall@5": 0.097,
+      "hit@10": 0.667,
+      "precision@10": 0.133,
+      "page_recall@10": 0.219,
+      "source_recall@10": 0.333
+     }
+    },
+    "latency_ms": {
+     "p50": 17.2,
+     "p95": 36.3
+    },
+    "mean_top_score": {
+     "answerable": 0.8275,
+     "unanswerable": 0.7321
+    }
+   },
+   "questions": [
+    {
+     "id": "f01",
+     "type": "fact",
+     "latency_ms": 59.2,
+     "top_score": 0.7477,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "09_li2025_lara_no_silver_bullet p8",
+      "01_lewis2020_rag_knowledge_intensive p2",
+      "01_lewis2020_rag_knowledge_intensive p19",
+      "11_jiang2024_longrag p3"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f02",
+     "type": "fact",
+     "latency_ms": 11.6,
+     "top_score": 0.792,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p4",
+      "01_lewis2020_rag_knowledge_intensive p6",
+      "08_li2024_long_context_vs_rag_revisits p13",
+      "16_2026_token_tax_rag_vs_long_context p4"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f03",
+     "type": "fact",
+     "latency_ms": 14.6,
+     "top_score": 0.7853,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p1",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "09_li2025_lara_no_silver_bullet p8",
+      "16_2026_token_tax_rag_vs_long_context p8",
+      "16_2026_token_tax_rag_vs_long_context p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f04",
+     "type": "fact",
+     "latency_ms": 17.5,
+     "top_score": 0.838,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p7",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p8",
+      "13_yue2024_inference_scaling_long_context_rag p17",
+      "03_xu2023_retrieval_meets_long_context p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f05",
+     "type": "fact",
+     "latency_ms": 18.3,
+     "top_score": 0.7849,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p1",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p3"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f06",
+     "type": "fact",
+     "latency_ms": 12.5,
+     "top_score": 0.8462,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "03_xu2023_retrieval_meets_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p2",
+      "08_li2024_long_context_vs_rag_revisits p2",
+      "03_xu2023_retrieval_meets_long_context p1"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f07",
+     "type": "fact",
+     "latency_ms": 21.1,
+     "top_score": 0.8209,
+     "top5": [
+      "04_li2024_rag_or_long_context_self_route p4",
+      "04_li2024_rag_or_long_context_self_route p4",
+      "04_li2024_rag_or_long_context_self_route p1",
+      "09_li2025_lara_no_silver_bullet p3",
+      "06_yu2024_in_defense_of_rag p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f08",
+     "type": "fact",
+     "latency_ms": 24.1,
+     "top_score": 0.8173,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "04_li2024_rag_or_long_context_self_route p5",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "04_li2024_rag_or_long_context_self_route p4"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f09",
+     "type": "fact",
+     "latency_ms": 22.2,
+     "top_score": 0.8294,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p5",
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p17",
+      "05_lee2024_loft_lclm_subsume_retrieval p18"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f10",
+     "type": "fact",
+     "latency_ms": 19.5,
+     "top_score": 0.8452,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p2",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "06_yu2024_in_defense_of_rag p3"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f11",
+     "type": "fact",
+     "latency_ms": 36.3,
+     "top_score": 0.7746,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p6",
+      "06_yu2024_in_defense_of_rag p1",
+      "06_yu2024_in_defense_of_rag p4",
+      "03_xu2023_retrieval_meets_long_context p7",
+      "07_leng2024_long_context_rag_performance p10"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f12",
+     "type": "fact",
+     "latency_ms": 16.6,
+     "top_score": 0.8763,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p2",
+      "07_leng2024_long_context_rag_performance p4",
+      "07_leng2024_long_context_rag_performance p13",
+      "04_li2024_rag_or_long_context_self_route p6",
+      "07_leng2024_long_context_rag_performance p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f13",
+     "type": "fact",
+     "latency_ms": 10.1,
+     "top_score": 0.749,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "07_leng2024_long_context_rag_performance p4",
+      "07_leng2024_long_context_rag_performance p3",
+      "09_li2025_lara_no_silver_bullet p3",
+      "02_liu2023_lost_in_the_middle p4"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f14",
+     "type": "fact",
+     "latency_ms": 23.9,
+     "top_score": 0.8272,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p9",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "08_li2024_long_context_vs_rag_revisits p10",
+      "09_li2025_lara_no_silver_bullet p1",
+      "09_li2025_lara_no_silver_bullet p2"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f15",
+     "type": "fact",
+     "latency_ms": 17.4,
+     "top_score": 0.8939,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p1",
+      "07_leng2024_long_context_rag_performance p2",
+      "07_leng2024_long_context_rag_performance p2",
+      "06_yu2024_in_defense_of_rag p1",
+      "12_jin2024_long_context_llms_meet_rag p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f16",
+     "type": "fact",
+     "latency_ms": 16.0,
+     "top_score": 0.7565,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p4",
+      "09_li2025_lara_no_silver_bullet p16",
+      "14_yen2024_helmet p2",
+      "09_li2025_lara_no_silver_bullet p1",
+      "09_li2025_lara_no_silver_bullet p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f17",
+     "type": "fact",
+     "latency_ms": 21.0,
+     "top_score": 0.8238,
+     "top5": [
+      "10_luo2025_does_rag_perform_bad p6",
+      "10_luo2025_does_rag_perform_bad p6",
+      "10_luo2025_does_rag_perform_bad p6",
+      "10_luo2025_does_rag_perform_bad p2",
+      "10_luo2025_does_rag_perform_bad p1"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f18",
+     "type": "fact",
+     "latency_ms": 25.9,
+     "top_score": 0.7569,
+     "top5": [
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p9",
+      "11_jiang2024_longrag p8"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f19",
+     "type": "fact",
+     "latency_ms": 21.7,
+     "top_score": 0.8656,
+     "top5": [
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p11"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f20",
+     "type": "fact",
+     "latency_ms": 24.4,
+     "top_score": 0.8366,
+     "top5": [
+      "10_luo2025_does_rag_perform_bad p1",
+      "02_liu2023_lost_in_the_middle p9",
+      "12_jin2024_long_context_llms_meet_rag p12",
+      "14_yen2024_helmet p29",
+      "13_yue2024_inference_scaling_long_context_rag p13"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f21",
+     "type": "fact",
+     "latency_ms": 20.5,
+     "top_score": 0.9073,
+     "top5": [
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "13_yue2024_inference_scaling_long_context_rag p6",
+      "13_yue2024_inference_scaling_long_context_rag p14",
+      "13_yue2024_inference_scaling_long_context_rag p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f22",
+     "type": "fact",
+     "latency_ms": 15.1,
+     "top_score": 0.8862,
+     "top5": [
+      "15_laban2024_summary_of_a_haystack p3",
+      "14_yen2024_helmet p10",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "14_yen2024_helmet p16",
+      "14_yen2024_helmet p39"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f23",
+     "type": "fact",
+     "latency_ms": 22.8,
+     "top_score": 0.7951,
+     "top5": [
+      "15_laban2024_summary_of_a_haystack p2",
+      "15_laban2024_summary_of_a_haystack p4",
+      "15_laban2024_summary_of_a_haystack p5",
+      "15_laban2024_summary_of_a_haystack p1",
+      "15_laban2024_summary_of_a_haystack p4"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f24",
+     "type": "fact",
+     "latency_ms": 19.1,
+     "top_score": 0.8814,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "16_2026_token_tax_rag_vs_long_context p2",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "16_2026_token_tax_rag_vs_long_context p4"
+     ],
+     "scores": {
+      "mrr@10": 0.14285714285714285,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "m01",
+     "type": "multi",
+     "latency_ms": 9.9,
+     "top_score": 0.857,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p1",
+      "12_jin2024_long_context_llms_meet_rag p4",
+      "12_jin2024_long_context_llms_meet_rag p3",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "04_li2024_rag_or_long_context_self_route p1"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 0.5
+     }
+    },
+    {
+     "id": "m02",
+     "type": "multi",
+     "latency_ms": 16.7,
+     "top_score": 0.7689,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p2",
+      "09_li2025_lara_no_silver_bullet p5",
+      "13_yue2024_inference_scaling_long_context_rag p13",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "09_li2025_lara_no_silver_bullet p8"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "m03",
+     "type": "multi",
+     "latency_ms": 12.6,
+     "top_score": 0.7719,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "12_jin2024_long_context_llms_meet_rag p5",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "01_lewis2020_rag_knowledge_intensive p19"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "m04",
+     "type": "multi",
+     "latency_ms": 11.9,
+     "top_score": 0.8932,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p3",
+      "09_li2025_lara_no_silver_bullet p7",
+      "14_yen2024_helmet p2",
+      "07_leng2024_long_context_rag_performance p2",
+      "08_li2024_long_context_vs_rag_revisits p4"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.16666666666666666,
+      "source_recall@5": 0.25,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.5
+     }
+    },
+    {
+     "id": "m05",
+     "type": "multi",
+     "latency_ms": 9.7,
+     "top_score": 0.7588,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p6",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "09_li2025_lara_no_silver_bullet p8",
+      "13_yue2024_inference_scaling_long_context_rag p25",
+      "02_liu2023_lost_in_the_middle p3"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.6666666666666666
+     }
+    },
+    {
+     "id": "m06",
+     "type": "multi",
+     "latency_ms": 13.1,
+     "top_score": 0.8826,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "10_luo2025_does_rag_perform_bad p1",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "03_xu2023_retrieval_meets_long_context p2",
+      "03_xu2023_retrieval_meets_long_context p1"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.4,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.4,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c01",
+     "type": "conflict",
+     "latency_ms": 15.4,
+     "top_score": 0.8478,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "06_yu2024_in_defense_of_rag p4",
+      "07_leng2024_long_context_rag_performance p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p2"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.25
+     }
+    },
+    {
+     "id": "c02",
+     "type": "conflict",
+     "latency_ms": 10.4,
+     "top_score": 0.9054,
+     "top5": [
+      "10_luo2025_does_rag_perform_bad p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "08_li2024_long_context_vs_rag_revisits p14"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c03",
+     "type": "conflict",
+     "latency_ms": 13.7,
+     "top_score": 0.886,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "08_li2024_long_context_vs_rag_revisits p7",
+      "07_leng2024_long_context_rag_performance p11",
+      "07_leng2024_long_context_rag_performance p2"
+     ],
+     "scores": {
+      "mrr@10": 0.14285714285714285,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 0.6666666666666666
+     }
+    },
+    {
+     "id": "u01",
+     "type": "unanswerable",
+     "latency_ms": 20.4,
+     "top_score": 0.7738,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p2",
+      "11_jiang2024_longrag p6",
+      "01_lewis2020_rag_knowledge_intensive p9",
+      "11_jiang2024_longrag p7",
+      "01_lewis2020_rag_knowledge_intensive p18"
+     ]
+    },
+    {
+     "id": "u02",
+     "type": "unanswerable",
+     "latency_ms": 10.6,
+     "top_score": 0.7131,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "16_2026_token_tax_rag_vs_long_context p5",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "02_liu2023_lost_in_the_middle p5",
+      "07_leng2024_long_context_rag_performance p20"
+     ]
+    },
+    {
+     "id": "u03",
+     "type": "unanswerable",
+     "latency_ms": 17.2,
+     "top_score": 0.7306,
+     "top5": [
+      "11_jiang2024_longrag p4",
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "07_leng2024_long_context_rag_performance p3",
+      "11_jiang2024_longrag p8",
+      "10_luo2025_does_rag_perform_bad p8"
+     ]
+    },
+    {
+     "id": "u04",
+     "type": "unanswerable",
+     "latency_ms": 15.3,
+     "top_score": 0.7111,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p9",
+      "12_jin2024_long_context_llms_meet_rag p9",
+      "01_lewis2020_rag_knowledge_intensive p8",
+      "07_leng2024_long_context_rag_performance p1",
+      "09_li2025_lara_no_silver_bullet p6"
+     ]
+    }
+   ]
+  },
+  "keyword": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.384,
+     "hit@5": 0.545,
+     "precision@5": 0.194,
+     "page_recall@5": 0.314,
+     "source_recall@5": 0.487,
+     "hit@10": 0.788,
+     "precision@10": 0.164,
+     "page_recall@10": 0.454,
+     "source_recall@10": 0.644
+    },
+    "by_type": {
+     "conflict": {
+      "mrr@10": 0.381,
+      "hit@5": 0.333,
+      "precision@5": 0.067,
+      "page_recall@5": 0.056,
+      "source_recall@5": 0.111,
+      "hit@10": 0.667,
+      "precision@10": 0.067,
+      "page_recall@10": 0.111,
+      "source_recall@10": 0.194
+     },
+     "fact": {
+      "mrr@10": 0.45,
+      "hit@5": 0.625,
+      "precision@5": 0.242,
+      "page_recall@5": 0.41,
+      "source_recall@5": 0.625,
+      "hit@10": 0.792,
+      "precision@10": 0.196,
+      "page_recall@10": 0.573,
+      "source_recall@10": 0.792
+     },
+     "multi": {
+      "mrr@10": 0.123,
+      "hit@5": 0.333,
+      "precision@5": 0.067,
+      "page_recall@5": 0.062,
+      "source_recall@5": 0.125,
+      "hit@10": 0.833,
+      "precision@10": 0.083,
+      "page_recall@10": 0.147,
+      "source_recall@10": 0.278
+     }
+    },
+    "latency_ms": {
+     "p50": 23.3,
+     "p95": 43.7
+    },
+    "mean_top_score": {
+     "answerable": 0.5145,
+     "unanswerable": 0.2711
+    }
+   },
+   "questions": [
+    {
+     "id": "f01",
+     "type": "fact",
+     "latency_ms": 18.1,
+     "top_score": 0.4142,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "12_jin2024_long_context_llms_meet_rag p32",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p32"
+     ],
+     "scores": {
+      "mrr@10": 0.1,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f02",
+     "type": "fact",
+     "latency_ms": 9.2,
+     "top_score": 0.4142,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "12_jin2024_long_context_llms_meet_rag p32",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p32",
+      "12_jin2024_long_context_llms_meet_rag p33"
+     ],
+     "scores": {
+      "mrr@10": 0.14285714285714285,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f03",
+     "type": "fact",
+     "latency_ms": 12.9,
+     "top_score": 0.5146,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p1",
+      "02_liu2023_lost_in_the_middle p11"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f04",
+     "type": "fact",
+     "latency_ms": 12.7,
+     "top_score": 0.5231,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p7",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p8",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p7"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 1.0,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.6,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f05",
+     "type": "fact",
+     "latency_ms": 9.0,
+     "top_score": 0.55,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p2",
+      "07_leng2024_long_context_rag_performance p12",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p4",
+      "02_liu2023_lost_in_the_middle p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f06",
+     "type": "fact",
+     "latency_ms": 26.2,
+     "top_score": 0.4689,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "02_liu2023_lost_in_the_middle p11",
+      "02_liu2023_lost_in_the_middle p3"
+     ],
+     "scores": {
+      "mrr@10": 0.125,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f07",
+     "type": "fact",
+     "latency_ms": 30.5,
+     "top_score": 0.5049,
+     "top5": [
+      "04_li2024_rag_or_long_context_self_route p4",
+      "04_li2024_rag_or_long_context_self_route p4",
+      "08_li2024_long_context_vs_rag_revisits p12",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "06_yu2024_in_defense_of_rag p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f08",
+     "type": "fact",
+     "latency_ms": 43.7,
+     "top_score": 0.7057,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f09",
+     "type": "fact",
+     "latency_ms": 20.0,
+     "top_score": 0.3031,
+     "top5": [
+      "14_yen2024_helmet p6",
+      "05_lee2024_loft_lclm_subsume_retrieval p4",
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "14_yen2024_helmet p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p5"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f10",
+     "type": "fact",
+     "latency_ms": 22.8,
+     "top_score": 0.8297,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "06_yu2024_in_defense_of_rag p2",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "12_jin2024_long_context_llms_meet_rag p32"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f11",
+     "type": "fact",
+     "latency_ms": 37.8,
+     "top_score": 0.5059,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p1",
+      "06_yu2024_in_defense_of_rag p2",
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "09_li2025_lara_no_silver_bullet p7"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f12",
+     "type": "fact",
+     "latency_ms": 31.8,
+     "top_score": 0.8828,
+     "top5": [
+      "11_jiang2024_longrag p16",
+      "07_leng2024_long_context_rag_performance p12",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13"
+     ],
+     "scores": {
+      "mrr@10": 0.1,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f13",
+     "type": "fact",
+     "latency_ms": 28.1,
+     "top_score": 0.6029,
+     "top5": [
+      "11_jiang2024_longrag p16",
+      "07_leng2024_long_context_rag_performance p4",
+      "08_li2024_long_context_vs_rag_revisits p12",
+      "09_li2025_lara_no_silver_bullet p7",
+      "11_jiang2024_longrag p11"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f14",
+     "type": "fact",
+     "latency_ms": 32.2,
+     "top_score": 0.5448,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p1",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "07_leng2024_long_context_rag_performance p2",
+      "08_li2024_long_context_vs_rag_revisits p9",
+      "09_li2025_lara_no_silver_bullet p2"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f15",
+     "type": "fact",
+     "latency_ms": 28.9,
+     "top_score": 0.5418,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "09_li2025_lara_no_silver_bullet p2",
+      "09_li2025_lara_no_silver_bullet p7",
+      "06_yu2024_in_defense_of_rag p1",
+      "16_2026_token_tax_rag_vs_long_context p6"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f16",
+     "type": "fact",
+     "latency_ms": 11.9,
+     "top_score": 0.2735,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p16",
+      "09_li2025_lara_no_silver_bullet p4",
+      "14_yen2024_helmet p7",
+      "14_yen2024_helmet p7",
+      "14_yen2024_helmet p35"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f17",
+     "type": "fact",
+     "latency_ms": 23.3,
+     "top_score": 0.3808,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p11",
+      "08_li2024_long_context_vs_rag_revisits p3",
+      "09_li2025_lara_no_silver_bullet p8",
+      "05_lee2024_loft_lclm_subsume_retrieval p18",
+      "05_lee2024_loft_lclm_subsume_retrieval p3"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f18",
+     "type": "fact",
+     "latency_ms": 4.2,
+     "top_score": 0.1915,
+     "top5": [
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p11",
+      "11_jiang2024_longrag p10",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p8"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f19",
+     "type": "fact",
+     "latency_ms": 14.1,
+     "top_score": 0.4542,
+     "top5": [
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p10",
+      "11_jiang2024_longrag p7",
+      "11_jiang2024_longrag p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f20",
+     "type": "fact",
+     "latency_ms": 42.8,
+     "top_score": 0.5097,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "12_jin2024_long_context_llms_meet_rag p3",
+      "03_xu2023_retrieval_meets_long_context p9"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f21",
+     "type": "fact",
+     "latency_ms": 16.2,
+     "top_score": 0.5058,
+     "top5": [
+      "13_yue2024_inference_scaling_long_context_rag p1",
+      "13_yue2024_inference_scaling_long_context_rag p14",
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "12_jin2024_long_context_llms_meet_rag p31"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f22",
+     "type": "fact",
+     "latency_ms": 39.1,
+     "top_score": 0.4306,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p12",
+      "11_jiang2024_longrag p11",
+      "14_yen2024_helmet p39",
+      "14_yen2024_helmet p39",
+      "02_liu2023_lost_in_the_middle p1"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f23",
+     "type": "fact",
+     "latency_ms": 11.3,
+     "top_score": 0.3596,
+     "top5": [
+      "15_laban2024_summary_of_a_haystack p1",
+      "15_laban2024_summary_of_a_haystack p6",
+      "15_laban2024_summary_of_a_haystack p14",
+      "14_yen2024_helmet p41",
+      "14_yen2024_helmet p40"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f24",
+     "type": "fact",
+     "latency_ms": 45.6,
+     "top_score": 0.688,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "m01",
+     "type": "multi",
+     "latency_ms": 24.6,
+     "top_score": 0.5418,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "06_yu2024_in_defense_of_rag p1",
+      "08_li2024_long_context_vs_rag_revisits p12",
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "04_li2024_rag_or_long_context_self_route p4"
+     ],
+     "scores": {
+      "mrr@10": 0.2,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.25,
+      "source_recall@5": 0.5,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 0.5
+     }
+    },
+    {
+     "id": "m02",
+     "type": "multi",
+     "latency_ms": 28.7,
+     "top_score": 0.4963,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p12",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "11_jiang2024_longrag p16",
+      "13_yue2024_inference_scaling_long_context_rag p6"
+     ],
+     "scores": {
+      "mrr@10": 0.1,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.14285714285714285,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "m03",
+     "type": "multi",
+     "latency_ms": 14.8,
+     "top_score": 0.2967,
+     "top5": [
+      "11_jiang2024_longrag p2",
+      "12_jin2024_long_context_llms_meet_rag p11",
+      "08_li2024_long_context_vs_rag_revisits p3",
+      "11_jiang2024_longrag p2",
+      "16_2026_token_tax_rag_vs_long_context p1"
+     ],
+     "scores": {
+      "mrr@10": 0.2,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.125,
+      "source_recall@5": 0.25,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.125,
+      "source_recall@10": 0.25
+     }
+    },
+    {
+     "id": "m04",
+     "type": "multi",
+     "latency_ms": 34.6,
+     "top_score": 0.602,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "09_li2025_lara_no_silver_bullet p7",
+      "09_li2025_lara_no_silver_bullet p2",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 0.1111111111111111,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.16666666666666666,
+      "source_recall@10": 0.25
+     }
+    },
+    {
+     "id": "m05",
+     "type": "multi",
+     "latency_ms": 22.0,
+     "top_score": 0.5441,
+     "top5": [
+      "04_li2024_rag_or_long_context_self_route p13",
+      "11_jiang2024_longrag p16",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "11_jiang2024_longrag p16"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "m06",
+     "type": "multi",
+     "latency_ms": 32.6,
+     "top_score": 0.5213,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "08_li2024_long_context_vs_rag_revisits p13",
+      "08_li2024_long_context_vs_rag_revisits p12"
+     ],
+     "scores": {
+      "mrr@10": 0.125,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.2,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c01",
+     "type": "conflict",
+     "latency_ms": 25.5,
+     "top_score": 0.8828,
+     "top5": [
+      "11_jiang2024_longrag p16",
+      "07_leng2024_long_context_rag_performance p12",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13",
+      "04_li2024_rag_or_long_context_self_route p13"
+     ],
+     "scores": {
+      "mrr@10": 0.14285714285714285,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.16666666666666666,
+      "source_recall@10": 0.25
+     }
+    },
+    {
+     "id": "c02",
+     "type": "conflict",
+     "latency_ms": 25.4,
+     "top_score": 0.4871,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "11_jiang2024_longrag p11"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.16666666666666666,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.16666666666666666,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c03",
+     "type": "conflict",
+     "latency_ms": 29.0,
+     "top_score": 0.5049,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p3",
+      "07_leng2024_long_context_rag_performance p11",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "08_li2024_long_context_vs_rag_revisits p14"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "u01",
+     "type": "unanswerable",
+     "latency_ms": 17.8,
+     "top_score": 0.3002,
+     "top5": [
+      "01_lewis2020_rag_knowledge_intensive p18",
+      "01_lewis2020_rag_knowledge_intensive p3",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p18",
+      "02_liu2023_lost_in_the_middle p4"
+     ]
+    },
+    {
+     "id": "u02",
+     "type": "unanswerable",
+     "latency_ms": 15.8,
+     "top_score": 0.2777,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "07_leng2024_long_context_rag_performance p9",
+      "08_li2024_long_context_vs_rag_revisits p11",
+      "07_leng2024_long_context_rag_performance p3",
+      "07_leng2024_long_context_rag_performance p15"
+     ]
+    },
+    {
+     "id": "u03",
+     "type": "unanswerable",
+     "latency_ms": 5.3,
+     "top_score": 0.0921,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p14",
+      "11_jiang2024_longrag p4",
+      "16_2026_token_tax_rag_vs_long_context p4",
+      "11_jiang2024_longrag p4",
+      "10_luo2025_does_rag_perform_bad p4"
+     ]
+    },
+    {
+     "id": "u04",
+     "type": "unanswerable",
+     "latency_ms": 15.9,
+     "top_score": 0.4142,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p31",
+      "12_jin2024_long_context_llms_meet_rag p32",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "12_jin2024_long_context_llms_meet_rag p32"
+     ]
+    }
+   ]
+  },
+  "hybrid": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.539,
+     "hit@5": 0.818,
+     "precision@5": 0.333,
+     "page_recall@5": 0.473,
+     "source_recall@5": 0.657,
+     "hit@10": 0.848,
+     "precision@10": 0.221,
+     "page_recall@10": 0.559,
+     "source_recall@10": 0.71
+    },
+    "by_type": {
+     "conflict": {
+      "mrr@10": 0.75,
+      "hit@5": 1.0,
+      "precision@5": 0.333,
+      "page_recall@5": 0.25,
+      "source_recall@5": 0.306,
+      "hit@10": 1.0,
+      "precision@10": 0.167,
+      "page_recall@10": 0.25,
+      "source_recall@10": 0.306
+     },
+     "fact": {
+      "mrr@10": 0.589,
+      "hit@5": 0.792,
+      "precision@5": 0.375,
+      "page_recall@5": 0.58,
+      "source_recall@5": 0.792,
+      "hit@10": 0.833,
+      "precision@10": 0.25,
+      "page_recall@10": 0.674,
+      "source_recall@10": 0.833
+     },
+     "multi": {
+      "mrr@10": 0.233,
+      "hit@5": 0.833,
+      "precision@5": 0.167,
+      "page_recall@5": 0.154,
+      "source_recall@5": 0.292,
+      "hit@10": 0.833,
+      "precision@10": 0.133,
+      "page_recall@10": 0.257,
+      "source_recall@10": 0.417
+     }
+    },
+    "latency_ms": {
+     "p50": 48.5,
+     "p95": 69.7
+    },
+    "mean_top_score": {
+     "answerable": 0.0315,
+     "unanswerable": 0.0317
+    }
+   },
+   "questions": [
+    {
+     "id": "f01",
+     "type": "fact",
+     "latency_ms": 47.4,
+     "top_score": 0.03048,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "06_yu2024_in_defense_of_rag p4",
+      "09_li2025_lara_no_silver_bullet p2",
+      "09_li2025_lara_no_silver_bullet p7",
+      "12_jin2024_long_context_llms_meet_rag p34"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f02",
+     "type": "fact",
+     "latency_ms": 44.1,
+     "top_score": 0.0311,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "01_lewis2020_rag_knowledge_intensive p3",
+      "06_yu2024_in_defense_of_rag p4",
+      "01_lewis2020_rag_knowledge_intensive p3",
+      "08_li2024_long_context_vs_rag_revisits p5"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f03",
+     "type": "fact",
+     "latency_ms": 52.2,
+     "top_score": 0.03202,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p1",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p1"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f04",
+     "type": "fact",
+     "latency_ms": 54.6,
+     "top_score": 0.03279,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p7",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p7",
+      "02_liu2023_lost_in_the_middle p8",
+      "02_liu2023_lost_in_the_middle p8"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 1.0,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.8,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f05",
+     "type": "fact",
+     "latency_ms": 51.9,
+     "top_score": 0.03202,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p3",
+      "12_jin2024_long_context_llms_meet_rag p27"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f06",
+     "type": "fact",
+     "latency_ms": 45.7,
+     "top_score": 0.03252,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "03_xu2023_retrieval_meets_long_context p1",
+      "08_li2024_long_context_vs_rag_revisits p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "03_xu2023_retrieval_meets_long_context p2"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f07",
+     "type": "fact",
+     "latency_ms": 51.1,
+     "top_score": 0.03279,
+     "top5": [
+      "04_li2024_rag_or_long_context_self_route p4",
+      "04_li2024_rag_or_long_context_self_route p4",
+      "08_li2024_long_context_vs_rag_revisits p13",
+      "04_li2024_rag_or_long_context_self_route p1",
+      "04_li2024_rag_or_long_context_self_route p1"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f08",
+     "type": "fact",
+     "latency_ms": 69.7,
+     "top_score": 0.03252,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p33",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "07_leng2024_long_context_rag_performance p5",
+      "07_leng2024_long_context_rag_performance p4",
+      "04_li2024_rag_or_long_context_self_route p1"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f09",
+     "type": "fact",
+     "latency_ms": 45.4,
+     "top_score": 0.03154,
+     "top5": [
+      "14_yen2024_helmet p6",
+      "05_lee2024_loft_lclm_subsume_retrieval p5",
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p4"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f10",
+     "type": "fact",
+     "latency_ms": 47.7,
+     "top_score": 0.03279,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p4",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p3",
+      "09_li2025_lara_no_silver_bullet p8"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f11",
+     "type": "fact",
+     "latency_ms": 59.7,
+     "top_score": 0.03226,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p1",
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p4",
+      "09_li2025_lara_no_silver_bullet p7",
+      "06_yu2024_in_defense_of_rag p4"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f12",
+     "type": "fact",
+     "latency_ms": 57.8,
+     "top_score": 0.03062,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p4",
+      "06_yu2024_in_defense_of_rag p1",
+      "07_leng2024_long_context_rag_performance p2",
+      "07_leng2024_long_context_rag_performance p2",
+      "09_li2025_lara_no_silver_bullet p7"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.25,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f13",
+     "type": "fact",
+     "latency_ms": 51.9,
+     "top_score": 0.03226,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p4",
+      "07_leng2024_long_context_rag_performance p2",
+      "08_li2024_long_context_vs_rag_revisits p12",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "02_liu2023_lost_in_the_middle p1"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f14",
+     "type": "fact",
+     "latency_ms": 53.9,
+     "top_score": 0.03077,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p2",
+      "06_yu2024_in_defense_of_rag p1",
+      "08_li2024_long_context_vs_rag_revisits p1",
+      "08_li2024_long_context_vs_rag_revisits p9",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f15",
+     "type": "fact",
+     "latency_ms": 48.5,
+     "top_score": 0.03125,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p1",
+      "07_leng2024_long_context_rag_performance p2",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f16",
+     "type": "fact",
+     "latency_ms": 32.8,
+     "top_score": 0.03252,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p4",
+      "09_li2025_lara_no_silver_bullet p16",
+      "14_yen2024_helmet p2",
+      "09_li2025_lara_no_silver_bullet p1",
+      "09_li2025_lara_no_silver_bullet p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f17",
+     "type": "fact",
+     "latency_ms": 43.7,
+     "top_score": 0.03009,
+     "top5": [
+      "10_luo2025_does_rag_perform_bad p6",
+      "10_luo2025_does_rag_perform_bad p6",
+      "08_li2024_long_context_vs_rag_revisits p3",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "10_luo2025_does_rag_perform_bad p7"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f18",
+     "type": "fact",
+     "latency_ms": 25.1,
+     "top_score": 0.03252,
+     "top5": [
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p8",
+      "11_jiang2024_longrag p11",
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f19",
+     "type": "fact",
+     "latency_ms": 35.5,
+     "top_score": 0.03132,
+     "top5": [
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p7"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f20",
+     "type": "fact",
+     "latency_ms": 63.1,
+     "top_score": 0.03102,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p12",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "12_jin2024_long_context_llms_meet_rag p11",
+      "03_xu2023_retrieval_meets_long_context p9"
+     ],
+     "scores": {
+      "mrr@10": 0.14285714285714285,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f21",
+     "type": "fact",
+     "latency_ms": 37.4,
+     "top_score": 0.03202,
+     "top5": [
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "13_yue2024_inference_scaling_long_context_rag p14",
+      "13_yue2024_inference_scaling_long_context_rag p1",
+      "13_yue2024_inference_scaling_long_context_rag p3",
+      "13_yue2024_inference_scaling_long_context_rag p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f22",
+     "type": "fact",
+     "latency_ms": 59.7,
+     "top_score": 0.03101,
+     "top5": [
+      "14_yen2024_helmet p39",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "15_laban2024_summary_of_a_haystack p3",
+      "14_yen2024_helmet p30",
+      "05_lee2024_loft_lclm_subsume_retrieval p10"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "f23",
+     "type": "fact",
+     "latency_ms": 37.7,
+     "top_score": 0.03202,
+     "top5": [
+      "15_laban2024_summary_of_a_haystack p1",
+      "15_laban2024_summary_of_a_haystack p4",
+      "15_laban2024_summary_of_a_haystack p5",
+      "15_laban2024_summary_of_a_haystack p5",
+      "15_laban2024_summary_of_a_haystack p6"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 1.0,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "f24",
+     "type": "fact",
+     "latency_ms": 74.9,
+     "top_score": 0.03105,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "16_2026_token_tax_rag_vs_long_context p7"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "m01",
+     "type": "multi",
+     "latency_ms": 49.2,
+     "top_score": 0.03202,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "12_jin2024_long_context_llms_meet_rag p3",
+      "04_li2024_rag_or_long_context_self_route p1",
+      "07_leng2024_long_context_rag_performance p2",
+      "04_li2024_rag_or_long_context_self_route p4"
+     ],
+     "scores": {
+      "mrr@10": 0.2,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.25,
+      "source_recall@5": 0.5,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "m02",
+     "type": "multi",
+     "latency_ms": 56.7,
+     "top_score": 0.03154,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p2",
+      "13_yue2024_inference_scaling_long_context_rag p20",
+      "12_jin2024_long_context_llms_meet_rag p16",
+      "14_yen2024_helmet p4",
+      "06_yu2024_in_defense_of_rag p1"
+     ],
+     "scores": {
+      "mrr@10": 0.2,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.14285714285714285,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.14285714285714285,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "m03",
+     "type": "multi",
+     "latency_ms": 35.9,
+     "top_score": 0.02802,
+     "top5": [
+      "11_jiang2024_longrag p2",
+      "12_jin2024_long_context_llms_meet_rag p4",
+      "12_jin2024_long_context_llms_meet_rag p5",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "01_lewis2020_rag_knowledge_intensive p19"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "m04",
+     "type": "multi",
+     "latency_ms": 55.8,
+     "top_score": 0.03226,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p7",
+      "08_li2024_long_context_vs_rag_revisits p4",
+      "07_leng2024_long_context_rag_performance p2",
+      "14_yen2024_helmet p2",
+      "09_li2025_lara_no_silver_bullet p2"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.16666666666666666,
+      "source_recall@5": 0.25,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.5
+     }
+    },
+    {
+     "id": "m05",
+     "type": "multi",
+     "latency_ms": 48.4,
+     "top_score": 0.02872,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p2",
+      "06_yu2024_in_defense_of_rag p2",
+      "02_liu2023_lost_in_the_middle p3",
+      "14_yen2024_helmet p35"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.16666666666666666,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.16666666666666666,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "m06",
+     "type": "multi",
+     "latency_ms": 63.3,
+     "top_score": 0.03279,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "03_xu2023_retrieval_meets_long_context p2",
+      "03_xu2023_retrieval_meets_long_context p7"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.2,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.4,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c01",
+     "type": "conflict",
+     "latency_ms": 50.9,
+     "top_score": 0.02831,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p1",
+      "06_yu2024_in_defense_of_rag p1",
+      "11_jiang2024_longrag p16",
+      "06_yu2024_in_defense_of_rag p2",
+      "16_2026_token_tax_rag_vs_long_context p7"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 0.25,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.3333333333333333,
+      "source_recall@10": 0.25
+     }
+    },
+    {
+     "id": "c02",
+     "type": "conflict",
+     "latency_ms": 45.7,
+     "top_score": 0.03252,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p10",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "03_xu2023_retrieval_meets_long_context p2",
+      "11_jiang2024_longrag p11"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.16666666666666666,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.16666666666666666,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "c03",
+     "type": "conflict",
+     "latency_ms": 49.2,
+     "top_score": 0.03178,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "07_leng2024_long_context_rag_performance p11",
+      "08_li2024_long_context_vs_rag_revisits p3",
+      "06_yu2024_in_defense_of_rag p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p10"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.25,
+      "source_recall@5": 0.3333333333333333,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 0.3333333333333333
+     }
+    },
+    {
+     "id": "u01",
+     "type": "unanswerable",
+     "latency_ms": 43.7,
+     "top_score": 0.03178,
+     "top5": [
+      "01_lewis2020_rag_knowledge_intensive p18",
+      "01_lewis2020_rag_knowledge_intensive p3",
+      "02_liu2023_lost_in_the_middle p7",
+      "08_li2024_long_context_vs_rag_revisits p2",
+      "11_jiang2024_longrag p6"
+     ]
+    },
+    {
+     "id": "u02",
+     "type": "unanswerable",
+     "latency_ms": 36.0,
+     "top_score": 0.03279,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "02_liu2023_lost_in_the_middle p5",
+      "02_liu2023_lost_in_the_middle p5",
+      "07_leng2024_long_context_rag_performance p20"
+     ]
+    },
+    {
+     "id": "u03",
+     "type": "unanswerable",
+     "latency_ms": 23.2,
+     "top_score": 0.03202,
+     "top5": [
+      "11_jiang2024_longrag p4",
+      "01_lewis2020_rag_knowledge_intensive p4",
+      "15_laban2024_summary_of_a_haystack p7",
+      "13_yue2024_inference_scaling_long_context_rag p9",
+      "02_liu2023_lost_in_the_middle p14"
+     ]
+    },
+    {
+     "id": "u04",
+     "type": "unanswerable",
+     "latency_ms": 36.1,
+     "top_score": 0.03002,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p9",
+      "01_lewis2020_rag_knowledge_intensive p8",
+      "08_li2024_long_context_vs_rag_revisits p9",
+      "06_yu2024_in_defense_of_rag p4",
+      "12_jin2024_long_context_llms_meet_rag p32"
+     ]
+    }
+   ]
+  }
+ }
+}

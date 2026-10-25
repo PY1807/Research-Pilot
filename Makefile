@@ -1,4 +1,4 @@
-.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest
+.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest eval review-sheet apply-review
 
 API := http://localhost:8000/api
 
@@ -57,3 +57,12 @@ ingest-corpus: ## Create a project and upload every PDF in data/corpus/
 
 reingest: ## Re-chunk every uploaded source (after changing chunking code or settings)
 	docker compose exec api python -m app.scripts.reingest
+
+eval: ## Score semantic, keyword and hybrid search on the benchmark (results in eval/results/)
+	docker compose exec api python -m app.evaluation.runner --benchmark /eval/$(or $(b),benchmark_v1.json)
+
+review-sheet: ## Build the labelling sheet (eval/review/) from pooled search results
+	docker compose exec api python -m app.evaluation.review_sheet --benchmark /eval/$(or $(b),benchmark_v1.json)
+
+apply-review: ## Write ticks from the reviewed sheet back into the benchmark labels
+	docker compose exec api python -m app.evaluation.apply_review --benchmark /eval/$(or $(b),benchmark_v1.json)

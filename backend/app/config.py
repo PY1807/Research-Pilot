@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     chunk_size: int = 1200
     chunk_overlap: int = 200
     chunk_min_size: int = 200
+    # Drop chunks that are almost all numbers (flattened tables, chart axes). 0.2 keeps
+    # number-heavy prose such as abstracts that list model names and scores.
+    chunk_min_prose_ratio: float = 0.2
 
     # Embeddings. "fastembed" runs the real model locally; "hash" is a fast fake for tests.
     # Changing the model's vector size needs a migration (document_chunks.embedding).
@@ -33,6 +36,10 @@ class Settings(BaseSettings):
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_batch_size: int = 32
     embedding_cache_dir: str = ".cache/fastembed"
+
+    # Hybrid search: how much the keyword list counts relative to the semantic list in
+    # Reciprocal Rank Fusion (1.0 = equal). Chosen on the benchmark; see DECISIONS.md.
+    hybrid_keyword_weight: float = 1.0
 
     # Until auth lands in M8, every request acts as this single seeded user.
     dev_user_email: str = "dev@researchpilot.local"

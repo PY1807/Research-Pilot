@@ -26,3 +26,6 @@ models/
 .DS_Store
 .idea/
 .vscode/
+
+# Review sheets quote the corpus text; regenerate with `make review-sheet`
+eval/review/

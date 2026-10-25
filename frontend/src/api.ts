@@ -23,13 +23,18 @@ export type Source = {
   created_at: string
 }
 
+export type SearchMode = 'hybrid' | 'semantic' | 'keyword'
+
 export type SearchResult = {
   chunk_id: string
   source_id: string
   source_title: string
   page_number: number | null
   text: string
+  /** Mode-specific: cosine similarity, keyword rank score, or RRF score. */
   score: number
+  semantic_rank: number | null
+  keyword_rank: number | null
 }
 
 export class ApiError extends Error {
@@ -79,9 +84,9 @@ export const api = {
     return request<Source>(`/projects/${projectId}/sources/`, { method: 'POST', body: form })
   },
 
-  search: (projectId: string, query: string, k = 5) =>
+  search: (projectId: string, query: string, mode: SearchMode = 'hybrid', k = 5) =>
     request<SearchResult[]>(
-      `/projects/${projectId}/search/?${new URLSearchParams({ q: query, k: String(k) })}`,
+      `/projects/${projectId}/search/?${new URLSearchParams({ q: query, k: String(k), mode })}`,
     ),
 }
 

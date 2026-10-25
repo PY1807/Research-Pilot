@@ -42,6 +42,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app  # live code reload; uploads land in backend/storage/
+      - ./eval:/eval  # benchmark question sets and results (make eval)
     depends_on:
       db:
         condition: service_healthy

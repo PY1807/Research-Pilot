@@ -7,10 +7,14 @@ Design rules:
   boundary still appears whole in at least one chunk.
 - A tiny leftover at the end of a page is merged into the previous chunk instead of
   becoming a near-empty chunk that would match searches by accident.
+- Page furniture (running headers, footers, page numbers) is removed, and chunks that
+  are almost all numbers (flattened tables and chart axes) are dropped: they match
+  keyword searches on repeated labels but can't support a readable citation.
 """
 
 import re
 import unicodedata
+from collections import Counter
 from dataclasses import dataclass
 
 
@@ -34,6 +38,47 @@ _LINE_BREAK_HYPHEN = re.compile(r"(\w)-\n([a-z])")
 _PARAGRAPH_BREAK = re.compile(r"\n\s*\n")
 # Split after . ! ? when the next sentence starts with a capital, digit, or bracket.
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9(\[])")
+
+
+# A line that is only a page number: "12", "Page 12", "12 of 30", "- 12 -".
+_PAGE_NUMBER_LINE = re.compile(r"[-–\s]*(page\s*)?\d{1,4}(\s*(of|/)\s*\d{1,4})?[-–\s]*", re.I)
+# A real word: a letter followed by at least two lowercase letters, maybe with punctuation.
+_PROSE_WORD = re.compile(r"[A-Za-z][a-z]{2,}[.,;:)]?")
+
+
+def remove_repeated_lines(
+    pages: list[str], min_share: float = 0.5, max_len: int = 120
+) -> list[str]:
+    """Drop running headers, footers and page numbers from raw page texts.
+
+    A short line that appears, word for word, on at least `min_share` of the pages (and
+    at least 3) is page furniture, e.g. "Published as a conference paper at ICLR 2024".
+    Lines that are only a page number all count as the same line, since the number
+    changes on every page. Other digits are compared exactly, so "Table 3 shows..." on
+    a few pages is never mistaken for a header.
+    """
+    if len(pages) < 3:
+        return pages
+
+    def key(line: str) -> str:
+        line = " ".join(line.split())
+        return "<page-number>" if _PAGE_NUMBER_LINE.fullmatch(line) else line.lower()
+
+    page_counts = Counter(
+        k for page in pages for k in {key(line) for line in page.splitlines() if line.strip()}
+    )
+    threshold = max(3, min_share * len(pages))
+    repeated = {k for k, n in page_counts.items() if n >= threshold and len(k) <= max_len}
+    return [
+        "\n".join(line for line in page.splitlines() if key(line) not in repeated) for page in pages
+    ]
+
+
+def prose_ratio(text: str) -> float:
+    """Share of tokens that are ordinary words. Body text is usually 0.5-0.8; a
+    flattened results table ("23.5 14.0 5.8 46.1 ...") is close to 0."""
+    tokens = text.split()
+    return sum(bool(_PROSE_WORD.fullmatch(t)) for t in tokens) / max(len(tokens), 1)
 
 
 def clean_page_text(raw: str) -> str:
@@ -114,8 +159,14 @@ def _chunk_page(text: str, size: int, overlap: int, min_size: int) -> list[str]:
 
 
 def chunk_pages(
-    pages: list[PageText], size: int = 1200, overlap: int = 200, min_size: int = 200
+    pages: list[PageText],
+    size: int = 1200,
+    overlap: int = 200,
+    min_size: int = 200,
+    min_prose_ratio: float = 0.0,
 ) -> list[Chunk]:
+    """Chunk every page. Chunks whose prose_ratio is below `min_prose_ratio` are left
+    out (0 keeps everything)."""
     if overlap >= size:
         raise ValueError("overlap must be smaller than size")
     chunks: list[Chunk] = []
@@ -123,5 +174,7 @@ def chunk_pages(
         if not page.text.strip():
             continue
         for text in _chunk_page(page.text, size, overlap, min_size):
+            if prose_ratio(text) < min_prose_ratio:
+                continue
             chunks.append(Chunk(index=len(chunks), page_number=page.page_number, text=text))
     return chunks

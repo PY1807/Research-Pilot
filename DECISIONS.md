@@ -225,6 +225,82 @@ FROM document_chunks c JOIN source_documents s ON s.id = c.source_id, q
 ORDER BY c.embedding <=> q.embedding LIMIT 4;
 ```
 
+
+---
+
+## Postgres full-text search + Reciprocal Rank Fusion (hybrid search, added in M3)
+
+**What it does in ResearchPilot:**
+Adds keyword search next to semantic search, and merges the two ranked lists into one. Hybrid is now the default search mode.
+
+**Why it helps / what it adds:**
+- **Catches exact terms.** Names like "RAG-Token", "LOFT" or "IterDRAG" are matched directly, even when the embedding model doesn't treat them as special.
+- **Measured gain, with a caveat.** On 43 questions (benchmark + smoke set), hybrid found a relevant passage in the top 5 for 32 vs 30 for semantic alone. The gain comes from questions that name specific methods; on loosely paraphrased questions, hybrid did worse (5/10 vs 7/10 on the smoke set).
+- **No new service.** Keyword search runs inside Postgres, on the same rows.
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Elasticsearch / OpenSearch | The classic search engines (BM25 ranking, rich analyzers). A whole extra cluster to run and keep in sync with Postgres |
+| BM25 in Postgres (ParadeDB `pg_search`, `pg_bm25`) | Better keyword ranking than `ts_rank_cd`, but needs a custom Postgres extension and image |
+| Weighted score blending (e.g. 0.7·semantic + 0.3·keyword) | Needs the two score scales calibrated against each other; RRF avoids that by using ranks only |
+| Only semantic search | Simpler and faster, and better on paraphrased questions; loses exact-term matches |
+
+What we give up: about 30 ms per search (two searches instead of one), and RRF's "agreement bonus" can push a correct answer that only one method found below passages both methods mildly like. Reranking (M5) is the planned fix.
+
+**How it works underneath:**
+- **`to_tsvector('english', text)`** turns text into stemmed lexemes with stopwords removed ("Retrieving passages" → `'passag' 'retriev'`). It's a **generated column**, so Postgres computes and updates it automatically.
+- **GIN index** (Generalized Inverted Index): maps each lexeme to the rows containing it, like a book's index.
+- **Any-word matching.** `plainto_tsquery` joins words with AND (`&`), so a natural question rarely matches anything. We swap `&` for OR (`|`) and let ranking reward chunks that contain more of the words.
+- **`ts_rank_cd`** ("cover density") scores chunks higher when query words appear close together; normalization option 1 stops long chunks winning just by length.
+- **Reciprocal Rank Fusion:** score = Σ weight / (60 + rank) over the lists a passage appears in. Ranks, not scores, so scales don't matter. Each method contributes its top 50 candidates.
+
+**Where to look:** `backend/app/retrieval/service.py` (`keyword_search`, `reciprocal_rank_fusion`, `hybrid_search`), `backend/app/db/models.py` (`search_vector`), `backend/alembic/versions/*_add_chunk_full_text_search.py`
+
+**Try it yourself:**
+- In the UI, search the same question in Hybrid, Meaning and Keywords modes. Each result shows where each method ranked it (`meaning #3 · keywords #1`).
+- In `make psql`: `SELECT to_tsvector('english', 'Retrieving passages improves models');` and `SELECT plainto_tsquery('english', 'How does Self-Route decide?');`
+
+---
+
+## Evaluation harness and retrieval metrics (added in M3)
+
+**What it does in ResearchPilot:**
+Scores every search method on a fixed, versioned set of questions with labelled answers, so changes are judged by measurement, not impressions. `make eval` prints a comparison table and saves results to `eval/results/`.
+
+**Why it helps / what it adds:**
+- **Catches wrong assumptions.** The data clean-up looked like an obvious win; the benchmark showed it helped single methods but was neutral for hybrid. The smoke set showed hybrid isn't better for every kind of question.
+- **Reproducible.** Questions, labels, settings, and results are committed together; anyone can re-run them.
+- **Shows where to improve.** Results break down by question type: multi-source and conflict questions have low source recall (~0.3–0.4) in every mode, which points to result diversity as the next problem.
+
+**Metrics, in plain words (per question, then averaged):**
+| Metric | Question it answers |
+|---|---|
+| Hit@k | Did any relevant passage appear in the top k? |
+| MRR@10 | How high was the first relevant passage? (1st = 1.0, 2nd = 0.5, 5th = 0.2) |
+| Precision@k | What share of the top k is relevant? |
+| Page recall@k | What share of the labelled pages did we find? |
+| Source recall@k | What share of the labelled papers did we find? (key for multi-source and conflict questions) |
+| p50 / p95 latency | Typical and slow-case search time |
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Ragas / TruLens / DeepEval | Ready-made RAG evaluation libraries, mostly LLM-judged. Useful in M4 for answer quality; for retrieval, our own small harness is transparent and needs no LLM |
+| LLM-generated labels | Fast, but grades the system with another model's guesses. The blueprint says labels must be human-reviewed |
+| Bigger public benchmarks (BEIR, MS MARCO) | Measure general retrieval, not our corpus and our users' questions |
+
+What we give up: 37 + 10 questions is small. One question moves hit@5 by about 3 points, so small differences are noise. Question wording also biases results (named terms favour keyword search), which is why two differently-worded sets are kept.
+
+**How it works underneath:**
+- Labels are **(paper, page)** pairs, not chunk IDs, so they stay valid when chunk sizes change (needed for M4's chunk-size experiment).
+- **Pooling:** the review sheet collects every page any method returned in its top 5, so the reviewer judges all candidates, not only the ones the labeller thought of.
+- Draft labels → `make review-sheet` → human ticks → `make apply-review` → benchmark marked `reviewed`.
+
+**Where to look:** `backend/app/evaluation/` (`metrics.py`, `runner.py`, `review_sheet.py`, `apply_review.py`), `eval/benchmark_v1.json`, `eval/results/`, `eval/review/`
+
+**Try it yourself:** `make eval`, then open `eval/results/latest.md`.
+
 ---
 
 # Problems solved
@@ -400,3 +476,56 @@ Real problems hit while building, and how each was fixed. Each entry has the pro
 - **Simple fix:** looked at what search actually returned for each miss.
 - **Findings:** one "miss" was a labelling mistake (other papers genuinely answer the question, but only one paper was listed); two were real retrieval failures (a loose paraphrase, and generic introduction text crowding out a specific method).
 - **What changes:** M3's benchmark allows several relevant passages per question; hybrid search (M3) and reranking (M5) target the two real failure types. The labels were not edited to raise the score.
+
+## Session 1, continued (2026-10-25): M3
+
+### Search
+
+**31. Keyword search matched almost nothing for natural questions**
+- **Problem:** Postgres's `plainto_tsquery` requires *every* word to match, and questions like "how does Self-Route decide between RAG and long context" rarely have every word in one chunk.
+- **Simple fix:** match chunks with *any* of the words, and let ranking reward chunks with more of them.
+- **Technical fix:** cast the `plainto_tsquery` result to text, replace `' & '` with `' | '`, and parse it back with `to_tsquery`; rank with `ts_rank_cd`.
+
+**32. Figure and table text polluted keyword results**
+- **Problem:** the review sheet showed chart-axis chunks (`# Retrieved Passages 0.50 0.55 … RAG Accuracy`) ranking high for keyword search, because they repeat a few words many times.
+- **Simple fix:** drop chunks that are almost entirely numbers, and remove running headers, footers and page numbers.
+- **Technical fix:** a `prose_ratio` (share of tokens that are real words) with a cutoff of 0.2. The cutoff was picked by reading borderline chunks: 0.3 would have dropped part of HELMET's abstract (0.26). Plus `remove_repeated_lines`: a short line appearing word-for-word on at least half of a paper's pages (and 3 or more) is removed. Result: 1,279 → 1,202 chunks; chunks with the ICLR header: 68 → 0.
+- **Measured effect:** hit@5 semantic 63.6% → 69.7%, keyword 54.5% → 60.6%, hybrid unchanged at 81.8% (within noise).
+
+**33. Header removal deleted real content (caught by a test)**
+- **Problem:** the first version replaced all digits before comparing lines, so "Unique content 1." and "Unique content 2." looked identical and were deleted.
+- **Simple fix:** compare lines exactly; only lines that are *just* a page number count as the same.
+- **Technical fix:** a `_PAGE_NUMBER_LINE` regex (`12`, `Page 12`, `12 of 30`) maps to one key; every other line is compared word for word. Regression test: `test_numbered_content_lines_are_not_mistaken_for_headers`.
+
+### Evaluation
+
+**34. `MissingGreenlet` crash in the eval runner**
+- **Problem:** the runner crashed on the second search mode with `sqlalchemy.exc.MissingGreenlet`.
+- **Simple fix:** read the project's ID once and keep the plain value.
+- **Technical fix:** `session.rollback()` (run after each question to end the transaction) expires every loaded ORM object; reading `project.id` afterwards triggered a synchronous lazy reload, which async SQLAlchemy forbids. Copy `project_id = project.id` before the loop.
+
+**35. Percentile was off by one (caught by a test)**
+- **Problem:** the p50 of 10 values returned the 6th value instead of the 5th.
+- **Technical fix:** Python's `round(5.5)` rounds to the even number (6). Replaced with the textbook nearest-rank formula, `ceil(p/100 × n)`.
+
+**36. Hybrid won the benchmark but lost the smoke test**
+- **Problem:** hybrid scored 81.8% hit@5 on the new benchmark but 5/10 on M2's smoke set, where semantic scored 7/10.
+- **Simple fix:** looked at why the two sets disagree instead of picking the convenient number.
+- **Finding:** about half the benchmark's fact questions name specific methods ("LOFT", "RetroLM"), which favours keyword search; the smoke questions were deliberately paraphrased. Hybrid helps queries with distinctive terms and adds noise to loose paraphrases.
+- **Tried:** weighted RRF (keyword weight 1.0 / 0.75 / 0.5 / 0.3) on both sets together. Equal weight got the most hits (32/43 vs 30/43 for semantic); lower weights didn't recover the smoke questions, because RRF's agreement bonus lets any passage found by both methods beat a passage ranked #1 by only one.
+- **Decision:** hybrid stays the default (best overall, modest margin); results recorded with the caveat; reranking (M5) is the planned fix.
+
+**37. Search scores can't tell "not covered" from "covered"**
+- **Problem:** we hoped a low top score would signal that the corpus doesn't answer a question.
+- **Finding:** unanswerable questions scored 0.71–0.77; answerable ones 0.75–0.91. They overlap, and one unanswerable question outscored four answerable ones.
+- **What changes:** in M4, the LLM must judge whether the retrieved passages actually answer the question, and say so when they don't.
+
+**38. Smaller fixes**
+- The review sheet listed a method twice ("keyword, keyword") when two chunks came from one page. Fixed by recording each method once per page.
+- Ruff flagged blocking file I/O inside the async eval runner. Fixed by moving file reading and writing into the synchronous `main()`, keeping the coroutine for database work only.
+- Re-embedding the corpus took 146 s this time vs 491 s in M2 (after restarting the worker). The earlier "CPU contention" explanation is unconfirmed; logged rather than tuned.
+
+**39. The review sheet was committed with corpus text in it**
+- **Problem:** `eval/review/benchmark_v1_review.md` quotes ~400 characters from each of 383 passages. It was pushed to the public repo with the M3 commit, although the corpus is meant to stay local.
+- **Simple fix:** removed it from git entirely, as if it had never been committed; it's regenerated from the database with `make review-sheet`.
+- **Technical fix:** rewrote the M3 commit without the file (`git reset --soft` to the previous commit, re-commit), added `eval/review/` to `.gitignore`, and force-pushed `main` with `--force-with-lease`. GitHub can still serve the old commit by its exact ID for a while (cached, unreferenced commits) until its garbage collection runs.

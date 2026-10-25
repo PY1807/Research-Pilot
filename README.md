@@ -12,9 +12,9 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 | | |
 |---|---|
 | **Current milestone** | M1 — PDF ingestion (not started) |
-| **Next action** | Push to GitHub once the repo exists; then start M1 with the Celery + Redis concept brief |
-| **Blocked on (user)** | Create empty public GitHub repo `PY1807/researchpilot` · Research domain + PDF corpus (needed by M1) · LLM decision (needed by M4) |
-| **Last session** | 2026-10-25: M0 done (exit test passed); not yet pushed |
+| **Next action** | Start M1 with the Celery + Redis concept brief |
+| **Blocked on (user)** | Research domain + PDF corpus (needed by M1) · LLM decision (needed by M4) |
+| **Last session** | 2026-10-25: M0 done (exit test passed) and pushed |
 
 ### Milestone status
 
@@ -347,7 +347,7 @@ Cut in this order: M5 (reranking), then Markdown export and cost view from M9, t
 - **Keep it explainable.** The architecture can be as complex as it needs to be, but anyone should be able to understand the product. Every new major component gets a plain-language row in the "How it works, in plain words" table in section 1. If a part can't be explained in one sentence, simplify the part or the explanation.
 
 ### Git and GitHub
-- All work lives in the user's GitHub repo (account `PY1807`, pushed over SSH). The repo is created in M0.
+- All work lives in https://github.com/PY1807/Research-Pilot (remote `origin`, pushed over SSH).
 - **Single branch only: `main`.** No feature branches, no PRs. Commits are pushed incrementally as work progresses.
 - It's fine if `main` is briefly broken; fix forward with the next commit.
 - Small, focused commits with clear messages, so the history reads as a build log.

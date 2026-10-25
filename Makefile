@@ -1,7 +1,9 @@
-.PHONY: up down logs migrate revision seed test lint format psql reset-db
+.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest
+
+API := http://localhost:8000/api
 
 up: ## Build and start all services, apply migrations, seed the dev user
-	docker compose up -d --build --wait db api
+	docker compose up -d --build --wait db redis api worker
 	docker compose up -d web
 	$(MAKE) migrate
 	$(MAKE) seed
@@ -12,6 +14,9 @@ down: ## Stop all services (data is kept)
 
 logs: ## Follow logs from all services
 	docker compose logs -f
+
+worker-logs: ## Follow the Celery worker's logs (see ingestion jobs run)
+	docker compose logs -f worker
 
 migrate: ## Apply all pending database migrations
 	docker compose exec api alembic upgrade head
@@ -39,3 +44,15 @@ psql: ## Open a SQL shell on the development database
 
 reset-db: ## Delete all local data and start fresh
 	docker compose down -v
+
+ingest-corpus: ## Create a project and upload every PDF in data/corpus/
+	@project=$$(curl -sf -X POST $(API)/projects/ -H 'Content-Type: application/json' \
+		-d '{"title": "RAG vs long-context LLMs", "question": "When is retrieval-augmented generation better than long-context prompting, and what are the trade-offs?"}' \
+		| python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])') && \
+	echo "Project: $$project" && \
+	for f in data/corpus/*.pdf; do \
+		curl -s -o /dev/null -w "%{http_code}  $$f\n" -F "file=@$$f;type=application/pdf" $(API)/projects/$$project/sources/; \
+	done
+
+reingest: ## Re-chunk every uploaded source (after changing chunking code or settings)
+	docker compose exec api python -m app.scripts.reingest

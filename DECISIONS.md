@@ -74,3 +74,72 @@ What we give up: autogenerate isn't magic. It can't see things like Postgres ext
 - `docker compose exec api alembic history` shows the migration chain.
 - `docker compose exec api alembic current` shows which revision the database is on.
 - In `make psql`, run `SELECT * FROM alembic_version;` to see where Alembic stores that revision.
+
+---
+
+## Redis (added in M1)
+
+**What it does in ResearchPilot:**
+Holds the queue of background jobs. When you upload a PDF, the API puts a small message ("ingest source 42") into Redis, and the Celery worker takes it out and does the work.
+
+**Why it helps / what it adds:**
+- **Very fast.** Redis keeps its data in memory, so adding and taking messages takes microseconds.
+- **Decouples the API from slow work.** The API and the worker never talk directly; they only share the queue. Either can restart without the other noticing.
+- **Tiny to run.** One small container with no configuration.
+- **Useful later.** The same Redis can hold rate-limit counters (M8) and caches if we need them.
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| RabbitMQ | A dedicated message broker with stronger delivery guarantees and routing features. More to run and learn, and we don't need its extras for one queue |
+| Postgres as the queue (e.g. `SELECT ... FOR UPDATE SKIP LOCKED`) | One less service, and a perfectly valid choice. But Celery's support for it is weak, and Redis is the standard pairing employers expect to see |
+| Kafka | Built for huge event streams across many services. Massive overkill here |
+
+What we give up: Redis keeps data in memory, so a hard crash can lose queued messages that weren't saved to disk yet. That's acceptable here because the real job status lives in Postgres (a stuck `pending` source can simply be re-queued with `make reingest`).
+
+**How it works underneath:**
+- Redis is a key-value store where values can be data structures: strings, lists, sets, hashes. Everything lives in RAM, and a single thread processes commands one at a time, which makes each command atomic without locks.
+- Celery uses a Redis **list** as the queue. The API runs `LPUSH` to add a message on one end; workers run a blocking pop (`BRPOP`) on the other end, which waits efficiently until a message arrives.
+- With `acks_late`, Celery also keeps the in-flight message aside until the task finishes, so a crashed worker's job is redelivered instead of lost.
+
+**Where to look:** `docker-compose.yml` (the `redis` service), `backend/app/worker.py` (`broker=settings.redis_url`)
+
+**Try it yourself:**
+- `docker compose exec redis redis-cli ping` replies `PONG`.
+- `docker compose exec redis redis-cli llen celery` shows how many jobs are waiting (usually 0, because the worker is fast).
+
+---
+
+## Celery (added in M1)
+
+**What it does in ResearchPilot:**
+Runs slow jobs in a separate worker process. Today that's PDF ingestion (extract text, chunk, save). From M6 it also runs whole research agent runs, which can take minutes.
+
+**Why it helps / what it adds:**
+- **The API stays fast.** Uploading 16 papers took 1.5 seconds; the worker then processed them in the background in 0.2–3.5 seconds each.
+- **Survives crashes.** With `task_acks_late`, a job is only marked done after it finishes. If the worker dies mid-job, the job runs again.
+- **Retries.** Ingestion retries automatically (with growing delays) if the database is briefly unreachable.
+- **Scales out.** Run more workers, or raise `--concurrency`, and jobs spread across them with no code change.
+
+**Trade-offs and alternatives:**
+| Option | Why not |
+|---|---|
+| FastAPI `BackgroundTasks` | Runs inside the API process after the response. Simple, but if the API restarts, the job is lost, and heavy work slows the API down |
+| RQ (Redis Queue) | Simpler than Celery and a good choice for small apps. Fewer features (scheduling, retries with backoff, routing) and less common in job listings |
+| Dramatiq / arq | Lighter, modern alternatives (arq is async-native). Smaller ecosystems |
+| Temporal | Durable workflows with full step history. Powerful for long agent runs, but a large system to operate for a solo project |
+
+What we give up: Celery is big, its configuration has many sharp edges, and it's synchronous at heart. Our ingestion code is async, so each task wraps it in `asyncio.run()` and uses its own unpooled database engine (connections can't be shared across event loops).
+
+**How it works underneath:**
+- In the API, `ingest_source_task.delay(source_id)` doesn't run the function. It serializes the task name and arguments to JSON and pushes that message to Redis.
+- The worker (`celery -A app.worker worker`) imports the same code, waits on the queue, and when a message arrives, looks up the function by name (`sources.ingest`) and calls it with the arguments.
+- `--concurrency=2` starts 2 child processes, so 2 jobs run in parallel. `worker_prefetch_multiplier=1` makes each process take only one job at a time, so a long job doesn't hold others hostage.
+- Because a job can run twice (retry, or redelivery after a crash), tasks must be **idempotent**: running them again gives the same result. Ingestion deletes a source's old chunks before inserting new ones.
+- The API enqueues the job only *after* committing the database row. Otherwise the worker could pick up the message before the row exists.
+
+**Where to look:** `backend/app/worker.py`, `backend/app/sources/tasks.py`, `backend/app/sources/router.py` (`upload_source`), `docker-compose.yml` (the `worker` service)
+
+**Try it yourself:**
+- `make worker-logs`, then upload a PDF and watch `Task sources.ingest[...] received` and `succeeded in 0.8s`.
+- `make reingest` re-queues every source; watch the worker process them all again.

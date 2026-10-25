@@ -1,5 +1,9 @@
 # Local development stack. Start everything with `make up`.
-# Redis and the Celery worker join in M1.
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot
+  TEST_DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot_test
+  REDIS_URL: redis://redis:6379/0
 
 services:
   db:
@@ -20,18 +24,42 @@ services:
       timeout: 3s
       retries: 20
 
+  redis:
+    # Message queue between the API and the Celery worker. Not published to the host:
+    # only containers on this network need it (and a local Redis already uses 6379).
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   api:
     build: ./backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    environment:
-      DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot
-      TEST_DATABASE_URL: postgresql+asyncpg://researchpilot:researchpilot@db:5432/researchpilot_test
+    environment: *backend-env
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app  # live code reload
+      - ./backend:/app  # live code reload; uploads land in backend/storage/
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    # Same image and code as the API, different command: it consumes jobs from Redis.
+    # watchfiles restarts the worker when Python files change (Celery has no reload).
+    build: ./backend
+    command: watchfiles --filter python "celery -A app.worker worker --loglevel=info --concurrency=2" app
+    environment: *backend-env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   web:

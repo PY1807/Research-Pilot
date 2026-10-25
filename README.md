@@ -11,17 +11,18 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M1 — PDF ingestion (not started) |
-| **Next action** | Start M1 with the Celery + Redis concept brief |
-| **Blocked on (user)** | Research domain + PDF corpus (needed by M1) · LLM decision (needed by M4) |
-| **Last session** | 2026-10-25: M0 done (exit test passed) and pushed |
+| **Current milestone** | M2 — Semantic search + minimal UI (not started) |
+| **Next action** | Start M2 with the embeddings + pgvector concept brief. Open question for the user: proper visual style in M2, or plain until M9? |
+| **Blocked on (user)** | LLM decision (needed by M4) |
+| **Test corpus** | 16 papers on RAG vs long-context LLMs in `data/corpus/` (local only, never committed; list in `data/corpus/README.md`) |
+| **Last session** | 2026-10-25: M1 done (exit test passed): corpus ingested, 1,279 chunks |
 
 ### Milestone status
 
 | ID | Milestone | Status | Est. sessions |
 |---|---|---|---|
 | M0 | Setup | ✅ done | 1 |
-| M1 | PDF ingestion | ⬜ | 1 |
+| M1 | PDF ingestion | ✅ done | 1 |
 | M2 | Semantic search + minimal UI | ⬜ | 1 |
 | M3 | Hybrid search + eval harness | ⬜ | 1 |
 | M4 | Cited answers + experiments A–C | ⬜ | 1 |
@@ -40,6 +41,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-10-25 | M1 | Redis + Celery worker, projects/sources API, page-aware extraction + chunking, `make ingest-corpus` / `make reingest`, 25 tests, DECISIONS (Redis, Celery). Fixed tiny chunks and ligatures found on real data | Start M2 |
 | 2026-10-25 | M0 | Scaffold, Docker stack, 8-table schema + first Alembic migration, tests, CI, DECISIONS.md (Docker, Alembic). Fixed Docker Desktop setup issues; DB on host port 5433 | Push; start M1 |
 
 ### Decision log
@@ -88,6 +90,7 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 | The research assistant | The agent: an LLM that plans and calls tools, within hard limits |
 | The fact-checker | Citation check: each claim compared against its cited passage |
 | The notebook | Run trace: every step saved so you can see how the answer was built |
+| The mailroom | Task queue: the API drops a job in Redis and replies at once; a Celery worker picks it up and does the slow work (reading PDFs, later whole research runs) |
 | The exam | The benchmark: fixed questions with known answers, run after every change |
 
 ---
@@ -209,12 +212,12 @@ POST /api/runs/{id}/cancel/         cancel run
 - **Exit test:** `make up` starts everything; `make test` passes; the frontend shows API health.
 
 ### M1 — PDF ingestion 🧑
-- 🧑 User picks the research domain and 10–15 PDFs (default: RAG/retrieval papers)
-- [ ] Add Redis + Celery worker to docker compose (Redis on a non-default host port; a local Redis already uses 6379)
-- [ ] Upload endpoint with size/type limits; file stored privately with a checksum
-- [ ] `pypdf` extraction per page; clear failure status for scanned or empty PDFs
-- [ ] Paragraph-aware chunking with configurable size and overlap; page number kept on each chunk
-- [ ] Ingestion runs as a Celery task; status endpoint
+- [x] 🧑 Corpus chosen: 16 papers on RAG vs long-context LLMs (`data/corpus/`, local only)
+- [x] Add Redis + Celery worker to docker compose (Redis isn't exposed to the host at all; a local Redis already uses 6379)
+- [x] Upload endpoint with size/type limits; file stored privately with a checksum
+- [x] `pypdf` extraction per page; clear failure status for scanned or empty PDFs
+- [x] Paragraph-aware chunking with configurable size and overlap; page number kept on each chunk
+- [x] Ingestion runs as a Celery task; status endpoint
 - **Exit test:** uploading the corpus produces chunks with correct page numbers, checked on 3 random chunks.
 
 ### M2 — Semantic search + minimal UI

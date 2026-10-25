@@ -137,3 +137,46 @@ async def test_other_users_project_cannot_be_searched_or_downloaded(client, sess
 
     assert search.status_code == 404
     assert download.status_code == 404
+
+
+async def test_keyword_search_matches_stemmed_words(client, searchable_project):
+    # "retrieving" and "Retrieval" share the stem 'retriev'; "fetched" matches "fetches".
+    response = await client.get(
+        f"/api/projects/{searchable_project['project_id']}/search/",
+        params={"q": "retrieving fetched", "mode": "keyword"},
+    )
+
+    results = response.json()
+    assert results[0]["source_title"] == "RAG paper"
+    assert results[0]["keyword_rank"] == 1
+    assert results[0]["semantic_rank"] is None
+
+
+async def test_keyword_search_with_no_matching_words_returns_nothing(client, searchable_project):
+    response = await client.get(
+        f"/api/projects/{searchable_project['project_id']}/search/",
+        params={"q": "xylophone", "mode": "keyword"},
+    )
+
+    assert response.json() == []
+
+
+async def test_hybrid_results_report_ranks_from_both_methods(client, searchable_project):
+    response = await client.get(
+        f"/api/projects/{searchable_project['project_id']}/search/",
+        params={"q": "retrieval augmented generation", "mode": "hybrid"},
+    )
+
+    top = response.json()[0]
+    assert top["source_title"] == "RAG paper"
+    assert top["semantic_rank"] == 1
+    assert top["keyword_rank"] == 1
+
+
+async def test_unknown_search_mode_is_rejected(client, searchable_project):
+    response = await client.get(
+        f"/api/projects/{searchable_project['project_id']}/search/",
+        params={"q": "x", "mode": "magic"},
+    )
+
+    assert response.status_code == 422

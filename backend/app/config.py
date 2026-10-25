@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     env: str = "development"  # development | test | production
     database_url: str = (
-        "postgresql+asyncpg://researchpilot:researchpilot@localhost:5432/researchpilot"
+        "postgresql+asyncpg://researchpilot:researchpilot@localhost:5433/researchpilot"
     )
 
     # Until auth lands in M8, every request acts as this single seeded user.

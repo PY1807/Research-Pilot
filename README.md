@@ -11,16 +11,16 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M0 — Setup (not started) |
-| **Next action** | Scaffold repo, `git init`, docker compose |
-| **Blocked on (user)** | GitHub repo name + visibility (needed in M0) · Research domain + PDF corpus (needed by M1) · LLM decision (needed by M4) |
-| **Last session** | 2026-10-25: planning only, no code yet |
+| **Current milestone** | M1 — PDF ingestion (not started) |
+| **Next action** | Push to GitHub once the repo exists; then start M1 with the Celery + Redis concept brief |
+| **Blocked on (user)** | Create empty public GitHub repo `PY1807/researchpilot` · Research domain + PDF corpus (needed by M1) · LLM decision (needed by M4) |
+| **Last session** | 2026-10-25: M0 done (exit test passed); not yet pushed |
 
 ### Milestone status
 
 | ID | Milestone | Status | Est. sessions |
 |---|---|---|---|
-| M0 | Setup | ⬜ not started | 1 |
+| M0 | Setup | ✅ done | 1 |
 | M1 | PDF ingestion | ⬜ | 1 |
 | M2 | Semantic search + minimal UI | ⬜ | 1 |
 | M3 | Hybrid search + eval harness | ⬜ | 1 |
@@ -40,6 +40,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-10-25 | M0 | Scaffold, Docker stack, 8-table schema + first Alembic migration, tests, CI, DECISIONS.md (Docker, Alembic). Fixed Docker Desktop setup issues; DB on host port 5433 | Push; start M1 |
 
 ### Decision log
 
@@ -198,13 +199,13 @@ POST /api/runs/{id}/cancel/         cancel run
 **Legend:** 🧑 = needs the user's input before or during the milestone.
 
 ### M0 — Setup
-- [ ] `git init`, monorepo folders, `.gitignore`, `.env.example`
-- [ ] `docker compose`: postgres + pgvector, api, web (redis + worker join in M1)
-- [ ] FastAPI skeleton with `/health`; SQLAlchemy async session; Alembic baseline
-- [ ] All tables from the data model; `user_id` on top-level tables (children inherit via FK); seeded dev user
-- [ ] React + Vite skeleton that calls `/health`
-- [ ] `Makefile` (`make up`, `make test`, `make migrate`), CI with lint + tests
-- [ ] `docs/engineering-log.md` started
+- [x] `git init`, monorepo folders, `.gitignore`, `.env.example`
+- [x] `docker compose`: postgres + pgvector, api, web (redis + worker join in M1)
+- [x] FastAPI skeleton with `/health`; SQLAlchemy async session; Alembic baseline
+- [x] All tables from the data model; `user_id` on top-level tables (children inherit via FK); seeded dev user
+- [x] React + Vite skeleton that calls `/health`
+- [x] `Makefile` (`make up`, `make test`, `make migrate`), CI with lint + tests
+- [x] `docs/engineering-log.md` started
 - **Exit test:** `make up` starts everything; `make test` passes; the frontend shows API health.
 
 ### M1 — PDF ingestion 🧑

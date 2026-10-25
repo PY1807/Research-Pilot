@@ -6,7 +6,7 @@ from pathlib import Path
 os.environ["ENV"] = "test"
 os.environ["DATABASE_URL"] = os.environ.get(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://researchpilot:researchpilot@localhost:5432/researchpilot_test",
+    "postgresql+asyncpg://researchpilot:researchpilot@localhost:5433/researchpilot_test",
 )
 
 import pytest  # noqa: E402

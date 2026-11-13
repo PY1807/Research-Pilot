@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.answers import router as answers
 from app.api import health
 from app.config import get_settings
 from app.embeddings import get_embedder
@@ -31,3 +32,4 @@ app.include_router(health.router, prefix="/api")
 app.include_router(projects.router, prefix="/api")
 app.include_router(sources.router, prefix="/api")
 app.include_router(retrieval.router, prefix="/api")
+app.include_router(answers.router, prefix="/api")

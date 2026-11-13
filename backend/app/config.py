@@ -41,6 +41,31 @@ class Settings(BaseSettings):
     # Reciprocal Rank Fusion (1.0 = equal). Chosen on the benchmark; see DECISIONS.md.
     hybrid_keyword_weight: float = 1.0
 
+    # LLMs (M4). Providers are tried in the order listed; ones without an API key are
+    # skipped. Answers prefer Gemini; the citation judge prefers a *different* model, so
+    # the eval isn't a model grading its own answers. "fake" is the scripted test double.
+    llm_answer_providers: str = "gemini,grok,groq"
+    llm_judge_providers: str = "grok,groq,gemini"
+    llm_timeout_seconds: float = 60.0
+
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+    # xAI Grok (OpenAI-compatible). Paid per token; no standing free tier as of 2026-11.
+    grok_api_key: str = ""
+    grok_base_url: str = "https://api.x.ai/v1"
+    grok_model: str = "grok-3-mini"
+    # Groq (with a q): hosts open models (Llama etc.) on a free tier, OpenAI-compatible.
+    groq_api_key: str = ""
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_model: str = "llama-3.3-70b-versatile"
+
+    # USD per million tokens, as {"model": [input_price, output_price]}. Models missing
+    # here (free tiers) are costed at 0; tokens are always counted either way.
+    llm_prices_per_million: dict[str, tuple[float, float]] = {}
+
+    # Cited answers (M4): how many passages the LLM sees per question.
+    answer_top_k: int = 8
+
     # Until auth lands in M8, every request acts as this single seeded user.
     dev_user_email: str = "dev@researchpilot.local"
 

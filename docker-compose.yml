@@ -38,6 +38,9 @@ services:
     build: ./backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     environment: *backend-env
+    env_file:  # LLM API keys (M4). Optional: everything except answers works without it.
+      - path: .env
+        required: false
     ports:
       - "8000:8000"
     volumes:
@@ -55,6 +58,9 @@ services:
     build: ./backend
     command: watchfiles --filter python "celery -A app.worker worker --loglevel=info --concurrency=2" app
     environment: *backend-env
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./backend:/app
     depends_on:

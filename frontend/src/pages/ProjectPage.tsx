@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 
 import { api } from '../api'
+import { AskPanel } from '../components/AskPanel'
 import { SearchPanel } from '../components/SearchPanel'
 import { SourcesPanel } from '../components/SourcesPanel'
 
@@ -33,7 +34,10 @@ export default function ProjectPage() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <SourcesPanel projectId={projectId} />
-        <SearchPanel projectId={projectId} />
+        <div className="grid content-start gap-10">
+          <AskPanel projectId={projectId} />
+          <SearchPanel projectId={projectId} />
+        </div>
       </div>
     </div>
   )

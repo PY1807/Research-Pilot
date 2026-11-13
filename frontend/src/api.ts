@@ -37,6 +37,40 @@ export type SearchResult = {
   keyword_rank: number | null
 }
 
+export type AnswerPassage = {
+  /** "S1", "S2", ... as shown to the LLM. */
+  label: string
+  cited: boolean
+  chunk_id: string
+  source_id: string
+  source_title: string
+  page_number: number | null
+  text: string
+  score: number
+}
+
+export type Answer = {
+  run_id: string | null
+  question: string
+  answerable: boolean
+  claims: { text: string; citations: string[] }[]
+  passages: AnswerPassage[]
+  missing_information: string | null
+  /** Citations to passages the LLM was never shown; dropped before display. */
+  dropped_citations: string[]
+  retrieval_mode: SearchMode
+  retrieval_ms: number
+  usage: {
+    provider: string
+    model: string
+    calls: number
+    input_tokens: number
+    output_tokens: number
+    cost_usd: number
+    latency_ms: number
+  } | null
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -88,6 +122,13 @@ export const api = {
     request<SearchResult[]>(
       `/projects/${projectId}/search/?${new URLSearchParams({ q: query, k: String(k), mode })}`,
     ),
+
+  answer: (projectId: string, question: string) =>
+    request<Answer>(`/projects/${projectId}/answers/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    }),
 }
 
 /** Link to the original PDF; browsers' built-in viewers jump to `#page=N`. */

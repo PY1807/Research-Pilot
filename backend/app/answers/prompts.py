@@ -48,19 +48,19 @@ def passage_label(index: int) -> str:
     return f"S{index + 1}"
 
 
-def _escape(text: str) -> str:
+def escape(text: str) -> str:
     # A passage containing "</passage>" can't close its own tag and pose as prompt text.
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def build_answer_prompt(question: str, passages: Sequence[SearchResult]) -> str:
     blocks = [
-        f'<passage id="{passage_label(i)}" source="{_escape(p.source_title).replace(chr(34), "")}"'
+        f'<passage id="{passage_label(i)}" source="{escape(p.source_title).replace(chr(34), "")}"'
         f' page="{p.page_number if p.page_number is not None else "?"}">\n'
-        f"{_escape(p.text)}\n</passage>"
+        f"{escape(p.text)}\n</passage>"
         for i, p in enumerate(passages)
     ]
     return (
-        f"<question>\n{_escape(question)}\n</question>\n\n"
+        f"<question>\n{escape(question)}\n</question>\n\n"
         "<passages>\n" + "\n\n".join(blocks) + "\n</passages>"
     )

@@ -1,4 +1,4 @@
-.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest eval review-sheet apply-review
+.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest eval review-sheet apply-review eval-answers experiments-answers
 
 API := http://localhost:8000/api
 
@@ -66,3 +66,12 @@ review-sheet: ## Build the labelling sheet (eval/review/) from pooled search res
 
 apply-review: ## Write ticks from the reviewed sheet back into the benchmark labels
 	docker compose exec api python -m app.evaluation.apply_review --benchmark /eval/$(or $(b),benchmark_v1.json)
+
+eval-answers: ## Score cited answers (needs an LLM key): make eval-answers mode=hybrid k=5 label=C-hybrid
+	docker compose exec api python -m app.evaluation.answer_eval --benchmark /eval/$(or $(b),benchmark_v1.json) \
+		--mode $(or $(mode),hybrid) --k $(or $(k),8) $(if $(label),--label $(label)) \
+		$(if $(q),--questions $(q)) $(if $(limit),--limit $(limit))
+
+experiments-answers: ## M4 experiments A (semantic) and C (hybrid) on cited answers, same k
+	$(MAKE) eval-answers mode=semantic k=5 label=A-baseline-semantic
+	$(MAKE) eval-answers mode=hybrid k=5 label=C-hybrid

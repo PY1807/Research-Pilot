@@ -379,6 +379,55 @@ What we give up: LLM judges make mistakes and can be lenient, so the exit test i
 
 ---
 
+## Cross-encoder reranking (added in M5)
+
+**What it does in ResearchPilot:**
+After hybrid search finds the top 30 passages, a small cross-encoder model (`Xenova/ms-marco-MiniLM-L-6-v2`, 80 MB, local) reads the question and each passage *together* and reorders them. It's a search mode (`mode=rerank`) and the default retrieval for cited answers.
+
+**Why it helps / what it adds (experiment D, 37-question benchmark, draft labels):**
+| Mode | hit@5 | hit@10 | MRR@10 | source recall@10 | p50 latency* |
+|---|---|---|---|---|---|
+| semantic | 0.697 | 0.848 | 0.444 | 0.745 | 92 ms |
+| hybrid | 0.788 | 0.848 | 0.500 | 0.710 | 117 ms |
+| **rerank (MiniLM-L-6, top 30)** | **0.848** | **0.970** | **0.693** | **0.838** | 6.5 s |
+
+- **The biggest quality jump so far.** The first relevant passage moves from about 2nd to about 1st–2nd place on average (MRR 0.50 → 0.69), and 32 of 33 answerable questions now have a relevant page in the top 10.
+- **It fixes hybrid's weak spot.** On the 10 paraphrased smoke questions, hybrid was worse than plain semantic search (hit@5 0.5 vs 0.7, problem 36). Rerank matches semantic at @5 (0.7) and beats both at @10 (0.9 vs 0.8 / 0.6).
+- **Multi-source questions improve most:** source recall@10 for multi questions 0.42 → 0.57, which matters for the M7 report.
+
+**Variants tried (all on the benchmark, rerank mode):**
+| Variant | hit@5 | MRR@10 | source recall@10 | p50 latency* |
+|---|---|---|---|---|
+| MiniLM-L-6, top 20 | 0.818 | 0.618 | 0.808 | 4.5 s |
+| **MiniLM-L-6, top 30 (chosen)** | 0.848 | 0.693 | 0.838 | 6.5 s |
+| MiniLM-L-6, top 50 | 0.909 | 0.705 | 0.851 | 10.9 s |
+| MiniLM-L-12, top 30 | 0.879 | 0.736 | 0.846 | 13.7 s |
+
+Top 50 and the bigger L-12 model score a little higher, but each question moves hit@5 by 3 points, so +1–2 questions is within noise, and they cost 1.7–2× the time. hit@10 is 0.970 in every variant. Top 30 with L-6 is the middle ground; `RERANK_CANDIDATES` and `RERANKER_MODEL` can be raised on faster hardware.
+
+\*Latency was measured on the user's laptop, which slows to roughly a fifth of its speed under sustained load (the same 30-passage rerank takes 1.2 s cold and ~6 s a few seconds later; even semantic search went from 24 ms in M3 to 92 ms). macOS records no thermal warning; the failing battery is a suspect, not confirmed. On a normal machine expect roughly 1 s.
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Hosted rerankers (Cohere Rerank, Jina API, Voyage) | Fast and strong, but paid per call and another external service; local is free and private |
+| Bigger local models (`bge-reranker-base`, 1 GB) | Likely better quality, but 12× the size of MiniLM-L-6 on an 8 GB laptop, and L-12 already showed diminishing returns per second |
+| LLM as reranker (ask Gemini to sort passages) | Strong, but spends free-tier requests per search and adds seconds of network latency |
+| No reranking, tune hybrid instead (weighted RRF) | Tried in M3 (problem 36); weighting couldn't fix paraphrased questions |
+
+What we give up: seconds of CPU per query, so the interactive search box stays on hybrid (60 ms) with "Reranked" as an option. The reranker can only promote what hybrid found: the pool size caps recall.
+
+**How it works underneath:**
+- An embedding model (bi-encoder) turns question and passage into vectors *separately*; passages are encoded once at ingestion, so search is a fast vector comparison. It never sees the two texts side by side.
+- A cross-encoder takes `[CLS] question [SEP] passage [SEP]` as *one* input, so every question word can attend to every passage word, and outputs one relevance number. Nothing can be precomputed, so it costs one model pass per (question, passage) pair, which is why it only re-scores a short list.
+- MS MARCO MiniLM models were trained on real Bing queries paired with passages judged relevant, which is close to our task. Their input limit is 512 tokens; our pairs average 266 tokens (max 455), so nothing is cut off.
+
+**Where to look:** `backend/app/reranking.py`, `backend/app/retrieval/service.py` (`reranked_search`), `backend/app/config.py` (`reranker_*`, `rerank_candidates`, `answer_retrieval_mode`), `eval/results/benchmark-v1__20261114-*.md`
+
+**Try it yourself:** in the UI, search the same question with "Hybrid" and then "Reranked". Each reranked result shows where hybrid had ranked it (e.g. "hybrid #12 → reranked").
+
+---
+
 # Problems solved
 
 Real problems hit while building, and how each was fixed. Each entry has the problem, the fix in plain words, and the technical fix.
@@ -632,3 +681,11 @@ Real problems hit while building, and how each was fixed. Each entry has the pro
 - **Simple fix:** editing backend code restarts the worker, which killed the running jobs. Redis then held those jobs back for an hour before handing them out again. We cleared the held jobs and re-queued the 8 papers.
 - **Technical fix:** the worker runs under `watchfiles`, which restarts Celery on every `.py` change, killing in-flight tasks. Because of `task_acks_late=True`, the killed tasks weren't lost: Redis keeps unacknowledged tasks in an `unacked` hash and redelivers them only after the **visibility timeout** (default 3600 s). Fix: `redis-cli del unacked unacked_index`, then `ingest_source_task.delay()` for each source still in `processing`. An interrupted session earlier had left the corpus half re-chunked at 800 characters the same way, which would have skewed eval numbers silently.
 - **Lesson:** don't edit backend code while a long ingestion is running, and check `source_documents.status` before trusting eval numbers.
+
+### Reranking
+
+**44. Reranking looked 10× slower in the benchmark than in a quick test**
+- **Problem:** reranking 30 passages took 0.7 s in a quick test but 6–10 s per question in the benchmark.
+- **Simple fix:** not the model. The laptop slows down sharply after a few seconds of heavy work, so short tests look fast and long runs look slow.
+- **How it was found:** ruled out, one at a time: real vs synthetic text (both slow once warm), passage length (truncating to 600 characters didn't help), pool size (20 wasn't faster than 30), ONNX thread count (4 and 2 threads were slower), ONNX threads spin-waiting after the embedder (only ~2×). The clincher: the *same* synthetic test ran in 1.22 s, then 6.32 s a minute later in the same process. `pmset -g therm` reports no thermal or power limit.
+- **Decision:** keep reranking for answers (quality win, already seconds of LLM wait) and keep hybrid for the interactive search box. Latency numbers in this session are marked as laptop-specific.

@@ -11,11 +11,11 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M4 — Cited answers + experiments A–C (🟨 code done; LLM experiments wait on an API key) |
-| **Next action** | User adds `GEMINI_API_KEY` (+ `GROQ_API_KEY` or `GROK_API_KEY` for the judge) to `.env`, `make up`, then `make eval-answers b=smoke_questions.json` (exit test) and `make experiments-answers` (A, C). Then M5 |
+| **Current milestone** | M6a — Agent core (not started). M4 LLM runs still open |
+| **Next action** | User adds `GEMINI_API_KEY` (+ `GROQ_API_KEY` for the judge) to `.env`; then `make up`, `make eval-answers b=smoke_questions.json` (M4 exit test), `make experiments-answers` (A, C), re-run experiment B. Then M6a (needs the keys) |
 | **Blocked on (user)** | LLM API keys in `.env` · M4 spot-check of 5 citations · Label review (~2–3 h, `eval/review/`; deferred by the user, numbers stay provisional) |
 | **Test corpus** | 16 papers on RAG vs long-context LLMs in `data/corpus/` (local only, never committed; list in `data/corpus/README.md`) |
-| **Last session** | 2026-11-14: M4 built (LLM adapter, cited answers API + Ask UI, answer eval with LLM judge); M5 reranking built, experiment D running |
+| **Last session** | 2026-11-14: M4 built (LLM adapter, cited answers API + Ask UI, answer eval with LLM judge); M5 done: reranking, experiment D (MRR 0.50 → 0.69, hit@10 0.85 → 0.97) |
 
 ### Milestone status
 
@@ -26,7 +26,7 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 | M2 | Semantic search + minimal UI | ✅ done | 1 |
 | M3 | Hybrid search + eval harness | ✅ done (labels await review, deferred) | 1 |
 | M4 | Cited answers + experiments A–C | 🟨 code done, LLM runs pending a key | 1 |
-| M5 | Reranking (cuttable) | ⬜ | 0.5 |
+| M5 | Reranking (cuttable) | ✅ done | 0.5 |
 | M6 | Agent core | ⬜ | 2 |
 | M7 | arXiv connector + verified report | ⬜ | 1 |
 | M8 | Auth + security hardening | ⬜ | 1 |
@@ -41,6 +41,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-11-14 | M5 | Cross-encoder reranker (MiniLM-L-6, local), `mode=rerank`, answers rerank by default, experiment D (pool 20/30/50, L-6 vs L-12, smoke set), stuck-ingestion recovery (`make reingest-stuck`, 15-min visibility timeout), eval guard against partial corpus, 105 backend + 13 frontend tests, DECISIONS (reranking, problems 40–44) | M4 LLM runs; M6a |
 | 2026-11-14 | M4 | LLM decision (Gemini answers; Grok/Groq judge), `app/llm/` adapter + fallback + cost accounting, `POST /answers/` with validated citations, runs saved to research_runs/evidence/report/events, Ask panel, `make eval-answers` with LLM judge, 98 backend + 12 frontend tests, DECISIONS (LLM providers, cited answers) | Add keys, run exit test + A/C |
 | 2026-10-25 | M3 | Full-text search + RRF hybrid (default), eval harness (`make eval`, review sheet, apply-review), benchmark-v1 (37 q, draft), header/table clean-up, weighted RRF experiment, mode toggle in UI, 69 tests, DECISIONS (hybrid, eval) | User label review; M4 |
 | 2026-10-25 | M2 | bge-small embeddings (FastEmbed), pgvector HNSW, search API, PDF endpoint, Tailwind UI (projects, upload, live status, search), smoke test 7/10 @5, 42 tests, DECISIONS (embeddings, pgvector) | Review smoke questions; start M3 |
@@ -57,6 +58,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | 2026-10-25 | All work pushed to the user's GitHub repo (account `PY1807`, SSH); deployed in M10 | Public portfolio piece; history shows how it was built |
 | 2026-11-14 | LLM: Gemini (free tier, multimodal) answers; Grok or Groq judges; behind `LLMProvider` with fallback | Free; Gemini reads images/PDFs for later figure/table work; a different judge model avoids self-grading; Ollama ruled out by 8 GB RAM. xAI Grok has no free API tier, so Groq is the free OpenAI-compatible option |
 | 2026-11-14 | Label review deferred until after M4 | User's call; all eval numbers stay marked provisional |
+| 2026-11-14 | Reranking: MiniLM-L-6 over the top 30 hybrid results; default for answers, optional in search | Best quality per second in experiment D; laptop latency 5–9 s keeps the search box on hybrid |
 
 ---
 
@@ -95,6 +97,7 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 | The fact-checker | Citation check: each claim compared against its cited passage |
 | The notebook | Run trace: every step saved so you can see how the answer was built |
 | The mailroom | Task queue: the API drops a job in Redis and replies at once; a Celery worker picks it up and does the slow work (reading PDFs, later whole research runs) |
+| The specialist reader | Reranking: the librarians pull 30 likely passages fast; a second model then reads each one *alongside* your question and reorders the pile. Slower, but it puts the right page first far more often |
 | The writer | Cited answers: the LLM answers only from the passages it's shown, labels every sentence with the passage it came from (`S1`, `S2`…), and says "not enough evidence" when that's the honest answer. Citations to passages it wasn't shown are thrown out |
 | The switchboard | LLM adapter: Gemini, Grok and Groq plug into one interface; if one is rate-limited, the next takes over |
 | The examiner | LLM judge: a *different* model checks each answer against its cited pages and the labelled reference pages; `make eval-answers` scores the result |
@@ -116,7 +119,7 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 | Hybrid fusion | Reciprocal Rank Fusion (RRF) | Simple, no score calibration needed |
 | LLM | `LLMProvider` adapter over plain `httpx`: Gemini (answers, multimodal), xAI Grok or Groq (judge, fallback). Fake provider for tests | Free tiers; provider logic isolated; secrets server-side in `.env` |
 | Embeddings | Local `sentence-transformers` model behind an `Embedder` adapter | Free; swappable if quality falls short |
-| Reranker | Local cross-encoder behind an adapter | Only added after baseline is measured |
+| Reranker | Local cross-encoder (`Xenova/ms-marco-MiniLM-L-6-v2` via FastEmbed) behind a `Reranker` adapter, over the top 30 hybrid results | Added after the baseline was measured; experiment D: MRR 0.50 → 0.69 |
 | PDF parsing | `pypdf` (keeps page boundaries). OCR out of scope | Detect and report extraction failures clearly |
 | Background jobs | Celery + Redis | Long research runs must not block an HTTP request |
 | External connector | **arXiv API** (fallback: OpenAlex) | Open metadata and open-access PDFs |
@@ -253,8 +256,8 @@ POST /api/runs/{id}/cancel/         cancel run
 - **Exit test:** cited answers for the 10 test questions; user spot-checks that 5 citations actually support their claims.
 
 ### M5 — Reranking ✂️ cuttable
-- [ ] Local cross-encoder reranker behind an adapter
-- [ ] Experiment D; results table updated
+- [x] Local cross-encoder reranker behind an adapter (`app/reranking.py`, `mode=rerank`)
+- [x] Experiment D; results table in DECISIONS.md (pool size 20/30/50, MiniLM-L-6 vs L-12, smoke set)
 - **Exit test:** experiment D results recorded, whether it helped or not.
 
 ### M6a — Agent core

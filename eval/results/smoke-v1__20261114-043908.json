@@ -1,0 +1,865 @@
+{
+ "meta": {
+  "benchmark": "smoke-v1",
+  "review_status": "draft",
+  "run_at": "2026-11-14 04:39 UTC",
+  "question_counts": {
+   "fact": 10
+  },
+  "corpus": {
+   "project": "RAG vs long-context LLMs",
+   "sources": 16,
+   "chunks": 1198
+  },
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "chunking": {
+   "size": 1200,
+   "overlap": 200,
+   "min_size": 200,
+   "min_prose_ratio": 0.2
+  },
+  "reranker": {
+   "model": "Xenova/ms-marco-MiniLM-L-6-v2",
+   "candidates": 30
+  },
+  "rrf_k": 60,
+  "fusion_candidates": 50,
+  "depth": 10
+ },
+ "results": {
+  "semantic": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.586,
+     "hit@5": 0.7,
+     "precision@5": 0.32,
+     "page_recall@5": 0.312,
+     "source_recall@5": 0.7,
+     "hit@10": 0.8,
+     "precision@10": 0.24,
+     "page_recall@10": 0.396,
+     "source_recall@10": 0.8
+    },
+    "by_type": {
+     "fact": {
+      "mrr@10": 0.586,
+      "hit@5": 0.7,
+      "precision@5": 0.32,
+      "page_recall@5": 0.312,
+      "source_recall@5": 0.7,
+      "hit@10": 0.8,
+      "precision@10": 0.24,
+      "page_recall@10": 0.396,
+      "source_recall@10": 0.8
+     }
+    },
+    "latency_ms": {
+     "p50": 20.3,
+     "p95": 62.3
+    },
+    "mean_top_score": {
+     "answerable": 0.8209,
+     "unanswerable": null
+    }
+   },
+   "questions": [
+    {
+     "id": "q01",
+     "type": "fact",
+     "latency_ms": 62.3,
+     "top_score": 0.7786,
+     "top5": [
+      "14_yen2024_helmet p6",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "11_jiang2024_longrag p5",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "16_2026_token_tax_rag_vs_long_context p6"
+     ],
+     "scores": {
+      "mrr@10": 0.1111111111111111,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.14285714285714285,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q02",
+     "type": "fact",
+     "latency_ms": 27.3,
+     "top_score": 0.7834,
+     "top5": [
+      "08_li2024_long_context_vs_rag_revisits p1",
+      "11_jiang2024_longrag p3",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "12_jin2024_long_context_llms_meet_rag p13",
+      "04_li2024_rag_or_long_context_self_route p2"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q03",
+     "type": "fact",
+     "latency_ms": 25.7,
+     "top_score": 0.8377,
+     "top5": [
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p2",
+      "08_li2024_long_context_vs_rag_revisits p14"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 0.75,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q04",
+     "type": "fact",
+     "latency_ms": 20.0,
+     "top_score": 0.8461,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "08_li2024_long_context_vs_rag_revisits p1",
+      "03_xu2023_retrieval_meets_long_context p1",
+      "10_luo2025_does_rag_perform_bad p1"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.25,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q05",
+     "type": "fact",
+     "latency_ms": 21.8,
+     "top_score": 0.8124,
+     "top5": [
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p2",
+      "02_liu2023_lost_in_the_middle p9",
+      "11_jiang2024_longrag p3",
+      "11_jiang2024_longrag p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.6,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q06",
+     "type": "fact",
+     "latency_ms": 20.1,
+     "top_score": 0.8681,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p3",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "07_leng2024_long_context_rag_performance p2",
+      "02_liu2023_lost_in_the_middle p3",
+      "02_liu2023_lost_in_the_middle p2"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q07",
+     "type": "fact",
+     "latency_ms": 19.5,
+     "top_score": 0.903,
+     "top5": [
+      "14_yen2024_helmet p10",
+      "15_laban2024_summary_of_a_haystack p3",
+      "14_yen2024_helmet p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "14_yen2024_helmet p39"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q08",
+     "type": "fact",
+     "latency_ms": 21.2,
+     "top_score": 0.8228,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p8",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "10_luo2025_does_rag_perform_bad p1",
+      "09_li2025_lara_no_silver_bullet p3",
+      "14_yen2024_helmet p16"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q09",
+     "type": "fact",
+     "latency_ms": 20.2,
+     "top_score": 0.8574,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p2",
+      "09_li2025_lara_no_silver_bullet p16",
+      "09_li2025_lara_no_silver_bullet p8",
+      "06_yu2024_in_defense_of_rag p3",
+      "07_leng2024_long_context_rag_performance p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.2,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q10",
+     "type": "fact",
+     "latency_ms": 20.3,
+     "top_score": 0.6994,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "16_2026_token_tax_rag_vs_long_context p7",
+      "11_jiang2024_longrag p16",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "16_2026_token_tax_rag_vs_long_context p7"
+     ],
+     "scores": {
+      "mrr@10": 0.25,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.2,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.4,
+      "source_recall@10": 1.0
+     }
+    }
+   ]
+  },
+  "hybrid": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.45,
+     "hit@5": 0.5,
+     "precision@5": 0.24,
+     "page_recall@5": 0.233,
+     "source_recall@5": 0.5,
+     "hit@10": 0.6,
+     "precision@10": 0.2,
+     "page_recall@10": 0.32,
+     "source_recall@10": 0.6
+    },
+    "by_type": {
+     "fact": {
+      "mrr@10": 0.45,
+      "hit@5": 0.5,
+      "precision@5": 0.24,
+      "page_recall@5": 0.233,
+      "source_recall@5": 0.5,
+      "hit@10": 0.6,
+      "precision@10": 0.2,
+      "page_recall@10": 0.32,
+      "source_recall@10": 0.6
+     }
+    },
+    "latency_ms": {
+     "p50": 51.5,
+     "p95": 74.2
+    },
+    "mean_top_score": {
+     "answerable": 0.031,
+     "unanswerable": null
+    }
+   },
+   "questions": [
+    {
+     "id": "q01",
+     "type": "fact",
+     "latency_ms": 51.5,
+     "top_score": 0.03178,
+     "top5": [
+      "14_yen2024_helmet p6",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "11_jiang2024_longrag p5",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "11_jiang2024_longrag p16"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q02",
+     "type": "fact",
+     "latency_ms": 56.7,
+     "top_score": 0.02921,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p9",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "11_jiang2024_longrag p2",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "06_yu2024_in_defense_of_rag p2"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q03",
+     "type": "fact",
+     "latency_ms": 42.0,
+     "top_score": 0.03226,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p4",
+      "06_yu2024_in_defense_of_rag p3",
+      "08_li2024_long_context_vs_rag_revisits p14",
+      "06_yu2024_in_defense_of_rag p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 0.75,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 0.75,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q04",
+     "type": "fact",
+     "latency_ms": 37.7,
+     "top_score": 0.03227,
+     "top5": [
+      "03_xu2023_retrieval_meets_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p2",
+      "11_jiang2024_longrag p11"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q05",
+     "type": "fact",
+     "latency_ms": 35.7,
+     "top_score": 0.03279,
+     "top5": [
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p7",
+      "11_jiang2024_longrag p8",
+      "11_jiang2024_longrag p4",
+      "11_jiang2024_longrag p2"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.8,
+      "page_recall@10": 0.8333333333333334,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q06",
+     "type": "fact",
+     "latency_ms": 66.9,
+     "top_score": 0.03175,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "02_liu2023_lost_in_the_middle p1",
+      "11_jiang2024_longrag p5",
+      "02_liu2023_lost_in_the_middle p2",
+      "02_liu2023_lost_in_the_middle p3"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q07",
+     "type": "fact",
+     "latency_ms": 74.2,
+     "top_score": 0.03031,
+     "top5": [
+      "14_yen2024_helmet p39",
+      "14_yen2024_helmet p5",
+      "14_yen2024_helmet p7",
+      "14_yen2024_helmet p39",
+      "14_yen2024_helmet p8"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q08",
+     "type": "fact",
+     "latency_ms": 62.6,
+     "top_score": 0.03227,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p8",
+      "14_yen2024_helmet p16",
+      "02_liu2023_lost_in_the_middle p1",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "02_liu2023_lost_in_the_middle p11"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.25,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q09",
+     "type": "fact",
+     "latency_ms": 56.1,
+     "top_score": 0.03154,
+     "top5": [
+      "09_li2025_lara_no_silver_bullet p7",
+      "06_yu2024_in_defense_of_rag p3",
+      "07_leng2024_long_context_rag_performance p2",
+      "06_yu2024_in_defense_of_rag p1",
+      "09_li2025_lara_no_silver_bullet p2"
+     ],
+     "scores": {
+      "mrr@10": 0.3333333333333333,
+      "hit@5": 1.0,
+      "precision@5": 0.2,
+      "page_recall@5": 0.3333333333333333,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q10",
+     "type": "fact",
+     "latency_ms": 47.1,
+     "top_score": 0.02613,
+     "top5": [
+      "13_yue2024_inference_scaling_long_context_rag p29",
+      "07_leng2024_long_context_rag_performance p5",
+      "12_jin2024_long_context_llms_meet_rag p16",
+      "12_jin2024_long_context_llms_meet_rag p7",
+      "02_liu2023_lost_in_the_middle p3"
+     ],
+     "scores": {
+      "mrr@10": 0.16666666666666666,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.2,
+      "source_recall@10": 1.0
+     }
+    }
+   ]
+  },
+  "rerank": {
+   "summary": {
+    "overall": {
+     "mrr@10": 0.623,
+     "hit@5": 0.7,
+     "precision@5": 0.44,
+     "page_recall@5": 0.377,
+     "source_recall@5": 0.7,
+     "hit@10": 0.9,
+     "precision@10": 0.32,
+     "page_recall@10": 0.475,
+     "source_recall@10": 0.9
+    },
+    "by_type": {
+     "fact": {
+      "mrr@10": 0.623,
+      "hit@5": 0.7,
+      "precision@5": 0.44,
+      "page_recall@5": 0.377,
+      "source_recall@5": 0.7,
+      "hit@10": 0.9,
+      "precision@10": 0.32,
+      "page_recall@10": 0.475,
+      "source_recall@10": 0.9
+     }
+    },
+    "latency_ms": {
+     "p50": 6698.3,
+     "p95": 11466.2
+    },
+    "mean_top_score": {
+     "answerable": 3.041,
+     "unanswerable": null
+    }
+   },
+   "questions": [
+    {
+     "id": "q01",
+     "type": "fact",
+     "latency_ms": 1719.3,
+     "top_score": 1.6728,
+     "top5": [
+      "14_yen2024_helmet p35",
+      "16_2026_token_tax_rag_vs_long_context p6",
+      "11_jiang2024_longrag p5",
+      "07_leng2024_long_context_rag_performance p13",
+      "04_li2024_rag_or_long_context_self_route p7"
+     ],
+     "scores": {
+      "mrr@10": 0.0,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 0.0,
+      "precision@10": 0.0,
+      "page_recall@10": 0.0,
+      "source_recall@10": 0.0
+     }
+    },
+    {
+     "id": "q02",
+     "type": "fact",
+     "latency_ms": 4365.7,
+     "top_score": -1.087,
+     "top5": [
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "10_luo2025_does_rag_perform_bad p1",
+      "15_laban2024_summary_of_a_haystack p1",
+      "15_laban2024_summary_of_a_haystack p6",
+      "11_jiang2024_longrag p6"
+     ],
+     "scores": {
+      "mrr@10": 0.125,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.25,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q03",
+     "type": "fact",
+     "latency_ms": 11466.2,
+     "top_score": 8.1187,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p1",
+      "06_yu2024_in_defense_of_rag p2",
+      "06_yu2024_in_defense_of_rag p3",
+      "08_li2024_long_context_vs_rag_revisits p14"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 0.75,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.5,
+      "page_recall@10": 1.0,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q04",
+     "type": "fact",
+     "latency_ms": 9796.3,
+     "top_score": 5.1765,
+     "top5": [
+      "02_liu2023_lost_in_the_middle p5",
+      "03_xu2023_retrieval_meets_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p1",
+      "03_xu2023_retrieval_meets_long_context p9",
+      "08_li2024_long_context_vs_rag_revisits p4"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.25,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q05",
+     "type": "fact",
+     "latency_ms": 6468.4,
+     "top_score": 1.7444,
+     "top5": [
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p2",
+      "11_jiang2024_longrag p1",
+      "11_jiang2024_longrag p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 1.0,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.8,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q06",
+     "type": "fact",
+     "latency_ms": 6698.3,
+     "top_score": 4.3164,
+     "top5": [
+      "06_yu2024_in_defense_of_rag p2",
+      "02_liu2023_lost_in_the_middle p3",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "11_jiang2024_longrag p5",
+      "08_li2024_long_context_vs_rag_revisits p5"
+     ],
+     "scores": {
+      "mrr@10": 0.1,
+      "hit@5": 0.0,
+      "precision@5": 0.0,
+      "page_recall@5": 0.0,
+      "source_recall@5": 0.0,
+      "hit@10": 1.0,
+      "precision@10": 0.1,
+      "page_recall@10": 0.06666666666666667,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q07",
+     "type": "fact",
+     "latency_ms": 6951.5,
+     "top_score": 5.0742,
+     "top5": [
+      "14_yen2024_helmet p10",
+      "04_li2024_rag_or_long_context_self_route p2",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "14_yen2024_helmet p1",
+      "15_laban2024_summary_of_a_haystack p3"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q08",
+     "type": "fact",
+     "latency_ms": 7096.3,
+     "top_score": 3.0172,
+     "top5": [
+      "05_lee2024_loft_lclm_subsume_retrieval p8",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "14_yen2024_helmet p16",
+      "05_lee2024_loft_lclm_subsume_retrieval p1",
+      "05_lee2024_loft_lclm_subsume_retrieval p10"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.6,
+      "page_recall@5": 0.5,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.3,
+      "page_recall@10": 0.5,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q09",
+     "type": "fact",
+     "latency_ms": 8367.9,
+     "top_score": 6.3397,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p2",
+      "09_li2025_lara_no_silver_bullet p7",
+      "09_li2025_lara_no_silver_bullet p6",
+      "09_li2025_lara_no_silver_bullet p16",
+      "07_leng2024_long_context_rag_performance p4"
+     ],
+     "scores": {
+      "mrr@10": 1.0,
+      "hit@5": 1.0,
+      "precision@5": 0.4,
+      "page_recall@5": 0.6666666666666666,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 0.6666666666666666,
+      "source_recall@10": 1.0
+     }
+    },
+    {
+     "id": "q10",
+     "type": "fact",
+     "latency_ms": 6442.1,
+     "top_score": -3.9628,
+     "top5": [
+      "07_leng2024_long_context_rag_performance p5",
+      "16_2026_token_tax_rag_vs_long_context p3",
+      "16_2026_token_tax_rag_vs_long_context p1",
+      "16_2026_token_tax_rag_vs_long_context p4",
+      "16_2026_token_tax_rag_vs_long_context p3"
+     ],
+     "scores": {
+      "mrr@10": 0.5,
+      "hit@5": 1.0,
+      "precision@5": 0.8,
+      "page_recall@5": 0.6,
+      "source_recall@5": 1.0,
+      "hit@10": 1.0,
+      "precision@10": 0.4,
+      "page_recall@10": 0.6,
+      "source_recall@10": 1.0
+     }
+    }
+   ]
+  }
+ }
+}

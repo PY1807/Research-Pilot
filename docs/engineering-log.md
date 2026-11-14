@@ -87,3 +87,23 @@ One entry per working session: decision · reason · alternative · result · ne
 - **Decision:** answer-eval results JSON holds metrics, verdicts and (paper, page) references only; claim text and quotes go to the git-ignored spot-check sheet in `eval/review/`.
 - **Result:** 98 backend + 12 frontend tests; lint clean. LLM experiments (A, C, exit test) not run yet: no API key in `.env`.
 - **Incident:** experiment B (chunk sizes) was interrupted when the session ended, leaving the corpus half re-chunked at 800 characters. Restored to 1200 (1,198 chunks; M3 had 1,202, difference not yet explained). B to be re-run.
+
+## 2026-11-14 — M5 Reranking
+
+- **Decision:** cross-encoder `Xenova/ms-marco-MiniLM-L-6-v2` via FastEmbed's `TextCrossEncoder` (already a dependency), re-scoring the top 30 hybrid results. `OverlapReranker` (word overlap) in tests.
+- **Decision:** answers retrieve with rerank by default (`answer_retrieval_mode`); the search box stays on hybrid with "Reranked" as an option.
+  **Reason:** quality jump is large; latency on this laptop (5–9 s) is fine next to an LLM call but not for a search box.
+- **Experiment D (draft labels, 33 answerable questions):**
+
+  | Config | hit@5 | hit@10 | MRR@10 | source_recall@10 | p50 |
+  |---|---|---|---|---|---|
+  | hybrid | 0.788 | 0.848 | 0.500 | 0.710 | 117 ms |
+  | rerank L-6, top 20 | 0.818 | 0.970 | 0.618 | 0.808 | 4.5 s |
+  | **rerank L-6, top 30** | 0.848 | 0.970 | 0.693 | 0.838 | 6.5 s |
+  | rerank L-6, top 50 | 0.909 | 0.970 | 0.705 | 0.851 | 10.9 s |
+  | rerank L-12, top 30 | 0.879 | 0.970 | 0.736 | 0.846 | 13.7 s |
+
+  Smoke set (10 paraphrased): hit@5 semantic 0.7, hybrid 0.5, rerank 0.7; hit@10 0.8 / 0.6 / 0.9.
+- **Finding:** the laptop slows ~5× under sustained load (same test 1.2 s → 6.3 s), so all latencies this session are inflated; semantic search measured 92 ms vs 24 ms in M3.
+- **Fix:** stuck ingestion after worker restarts: Celery `visibility_timeout` 900 s, `make reingest-stuck`, eval runner refuses a partly ingested corpus.
+- **Result:** 105 backend + 13 frontend tests. Exit test met: experiment D recorded.

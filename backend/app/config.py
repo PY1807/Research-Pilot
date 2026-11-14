@@ -62,10 +62,10 @@ class Settings(BaseSettings):
     grok_api_key: str = ""
     grok_base_url: str = "https://api.x.ai/v1"
     grok_model: str = "grok-3-mini"
-    # Groq (with a q): hosts open models (Llama etc.) on a free tier, OpenAI-compatible.
+    # Groq (with a q): hosts open models (gpt-oss, Qwen etc.) on a free tier, OpenAI-compatible.
     groq_api_key: str = ""
     groq_base_url: str = "https://api.groq.com/openai/v1"
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"  # llama-3.3-70b-versatile retired by 2026-11
 
     # USD per million tokens, as {"model": [input_price, output_price]}. Models missing
     # here (free tiers) are costed at 0; tokens are always counted either way.

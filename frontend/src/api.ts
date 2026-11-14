@@ -23,7 +23,7 @@ export type Source = {
   created_at: string
 }
 
-export type SearchMode = 'hybrid' | 'semantic' | 'keyword'
+export type SearchMode = 'hybrid' | 'semantic' | 'keyword' | 'rerank'
 
 export type SearchResult = {
   chunk_id: string
@@ -31,10 +31,12 @@ export type SearchResult = {
   source_title: string
   page_number: number | null
   text: string
-  /** Mode-specific: cosine similarity, keyword rank score, or RRF score. */
+  /** Mode-specific: cosine similarity, keyword rank score, RRF score, or reranker score. */
   score: number
   semantic_rank: number | null
   keyword_rank: number | null
+  /** Position in the hybrid list before the reranker reordered it (rerank mode only). */
+  hybrid_rank: number | null
 }
 
 export type AnswerPassage = {

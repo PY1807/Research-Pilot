@@ -5,7 +5,12 @@ import { api, type SearchMode } from '../api'
 import { SearchResults } from './SearchResults'
 
 const MODES: { value: SearchMode; label: string; hint: string }[] = [
-  { value: 'hybrid', label: 'Hybrid', hint: 'Meaning and keywords combined (best on our benchmark)' },
+  { value: 'hybrid', label: 'Hybrid', hint: 'Meaning and keywords combined' },
+  {
+    value: 'rerank',
+    label: 'Reranked',
+    hint: 'Hybrid results re-read and reordered by a cross-encoder (slower, more precise)',
+  },
   { value: 'semantic', label: 'Meaning', hint: 'Embedding similarity only' },
   { value: 'keyword', label: 'Keywords', hint: 'Full-text word matching only' },
 ]

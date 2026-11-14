@@ -13,6 +13,7 @@ const result: SearchResult = {
   score: 0.03,
   semantic_rank: 2,
   keyword_rank: null,
+  hybrid_rank: null,
 }
 
 describe('SearchResults', () => {
@@ -31,6 +32,12 @@ describe('SearchResults', () => {
     render(<SearchResults results={[{ ...result, semantic_rank: 3, keyword_rank: 1 }]} />)
 
     expect(screen.getByText('meaning #3 · keywords #1')).toBeInTheDocument()
+  })
+
+  it('shows where a reranked passage sat in the hybrid list', () => {
+    render(<SearchResults results={[{ ...result, hybrid_rank: 12, keyword_rank: 1 }]} />)
+
+    expect(screen.getByText('hybrid #12 → reranked · meaning #2 · keywords #1')).toBeInTheDocument()
   })
 
   it('explains an empty result list', () => {

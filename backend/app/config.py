@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     # Reciprocal Rank Fusion (1.0 = equal). Chosen on the benchmark; see DECISIONS.md.
     hybrid_keyword_weight: float = 1.0
 
+    # Reranking (M5): a cross-encoder re-scores hybrid search's top candidates.
+    # "fastembed" runs the real model locally; "overlap" is a fast fake for tests.
+    reranker_provider: str = "fastembed"
+    reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
+    reranker_batch_size: int = 16
+    # How many hybrid results the cross-encoder reads. More = better recall, slower.
+    rerank_candidates: int = 30
+
     # LLMs (M4). Providers are tried in the order listed; ones without an API key are
     # skipped. Answers prefer Gemini; the citation judge prefers a *different* model, so
     # the eval isn't a model grading its own answers. "fake" is the scripted test double.

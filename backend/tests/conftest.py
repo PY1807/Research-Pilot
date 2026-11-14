@@ -13,6 +13,7 @@ os.environ["DATABASE_URL"] = os.environ.get(
 os.environ["STORAGE_DIR"] = tempfile.mkdtemp(prefix="researchpilot-test-storage-")
 # A fast keyword-hash embedder instead of the real model: no download, deterministic.
 os.environ["EMBEDDING_PROVIDER"] = "hash"
+os.environ["RERANKER_PROVIDER"] = "overlap"  # word-overlap stand-in for the cross-encoder
 # Never call a real LLM from tests, even if a developer's .env has keys: tests install a
 # FakeProvider where they need one.
 for _key in ("GEMINI_API_KEY", "GROK_API_KEY", "GROQ_API_KEY"):

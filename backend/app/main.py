@@ -8,6 +8,7 @@ from app.api import health
 from app.config import get_settings
 from app.embeddings import get_embedder
 from app.projects import router as projects
+from app.reranking import get_reranker
 from app.retrieval import router as retrieval
 from app.sources import router as sources
 
@@ -18,6 +19,7 @@ async def lifespan(app: FastAPI):
     # so no user waits for it. Skipped in tests, which use the instant hash embedder.
     if get_settings().env != "test":
         await asyncio.to_thread(get_embedder)
+        await asyncio.to_thread(get_reranker)
     yield
 
 

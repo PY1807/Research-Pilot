@@ -1,10 +1,11 @@
 """Retrieval: find the chunks most relevant to a question. No HTTP here, so the same
 functions serve the API, the evaluation harness (M3), and agent tools (M6).
 
-Three modes:
+Four modes:
 - semantic: embedding similarity (meaning), via pgvector's HNSW index
 - keyword:  Postgres full-text search (stemmed words), via a GIN index
 - hybrid:   both lists merged with Reciprocal Rank Fusion
+- rerank:   hybrid's top candidates re-scored by a cross-encoder (M5)
 """
 
 import asyncio
@@ -19,8 +20,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.db.models import DocumentChunk, IngestionStatus, SourceDocument
 from app.embeddings import get_embedder
+from app.reranking import get_reranker
 
-SearchMode = Literal["hybrid", "semantic", "keyword"]
+SearchMode = Literal["hybrid", "semantic", "keyword", "rerank"]
 
 # How many candidates each method contributes before fusion. Fusing deeper lists lets a
 # chunk ranked e.g. 30th by meaning but 2nd by keywords still reach the top.
@@ -37,10 +39,11 @@ class SearchResult:
     page_number: int | None
     text: str
     # Meaning depends on the mode: cosine similarity (semantic), ts_rank_cd (keyword),
-    # or RRF score (hybrid). Only compare scores within one mode.
+    # RRF score (hybrid), or cross-encoder score (rerank). Only compare within one mode.
     score: float
     semantic_rank: int | None = None  # 1-based position in the semantic list, if present
     keyword_rank: int | None = None  # 1-based position in the keyword list, if present
+    hybrid_rank: int | None = None  # 1-based position in the fused list, before reranking
 
 
 def _ready_chunks_in_project(project_id: uuid.UUID):
@@ -178,10 +181,40 @@ async def hybrid_search(
     ]
 
 
+async def reranked_search(
+    session: AsyncSession,
+    project_id: uuid.UUID,
+    query: str,
+    k: int = 5,
+    candidates: int | None = None,
+) -> list[SearchResult]:
+    """Hybrid search for `candidates` passages, then a cross-encoder reorders them.
+
+    The reranker can only promote what hybrid found, so `candidates` caps recall; a
+    larger pool finds more but costs one model pass per passage (CPU time).
+    """
+    candidates = max(candidates or get_settings().rerank_candidates, k)
+    pool = await hybrid_search(session, project_id, query, candidates)
+    if not pool:
+        return []
+    scores = await asyncio.to_thread(get_reranker().score, query, [r.text for r in pool])
+    # Python's sort is stable, so ties (common with the test reranker) keep hybrid's order.
+    ranked = sorted(
+        zip(range(1, len(pool) + 1), pool, scores, strict=True),
+        key=lambda item: item[2],
+        reverse=True,
+    )
+    return [
+        replace(result, score=round(score, 4), hybrid_rank=hybrid_rank)
+        for hybrid_rank, result, score in ranked[:k]
+    ]
+
+
 SEARCH_FUNCTIONS = {
     "hybrid": hybrid_search,
     "semantic": semantic_search,
     "keyword": keyword_search,
+    "rerank": reranked_search,
 }
 
 

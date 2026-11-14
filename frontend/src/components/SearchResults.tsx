@@ -2,6 +2,7 @@ import { sourceFileUrl, type SearchResult } from '../api'
 
 function MatchedBy({ result }: { result: SearchResult }) {
   const parts = [
+    result.hybrid_rank && `hybrid #${result.hybrid_rank} → reranked`,
     result.semantic_rank && `meaning #${result.semantic_rank}`,
     result.keyword_rank && `keywords #${result.keyword_rank}`,
   ].filter(Boolean)

@@ -22,6 +22,7 @@ from app.db.models import DocumentChunk, ResearchProject, SourceDocument
 from app.db.session import SessionLocal, engine
 from app.embeddings import get_embedder
 from app.evaluation.metrics import Retrieved, average, percentile, score_question
+from app.reranking import get_reranker
 from app.retrieval.service import FUSION_CANDIDATES, RRF_K, SEARCH_FUNCTIONS
 
 KS = (5, 10)
@@ -111,6 +112,8 @@ def _markdown(report: dict) -> str:
         f"- **Embedding model:** {meta['embedding_model']}",
         f"- **Chunking:** {meta['chunking']}",
         f"- **Hybrid:** RRF k={meta['rrf_k']}, {meta['fusion_candidates']} candidates per method",
+        f"- **Rerank:** {meta['reranker']['model']} over the top "
+        f"{meta['reranker']['candidates']} hybrid results",
         "",
         "## Overall (answerable questions)",
         "",
@@ -175,6 +178,8 @@ async def run(spec: dict, modes: list[str], project_title: str) -> dict:
         )
         # Load the model before timing anything, so latency excludes the one-off load.
         await asyncio.to_thread(get_embedder().embed_query, "warm up")
+        if "rerank" in modes:
+            await asyncio.to_thread(get_reranker().score, "warm up", ["warm up"])
         results = {mode: await _run_mode(session, project_id, mode, questions) for mode in modes}
     await engine.dispose()
 
@@ -194,6 +199,10 @@ async def run(spec: dict, modes: list[str], project_title: str) -> dict:
                 "overlap": settings.chunk_overlap,
                 "min_size": settings.chunk_min_size,
                 "min_prose_ratio": settings.chunk_min_prose_ratio,
+            },
+            "reranker": {
+                "model": settings.reranker_model,
+                "candidates": settings.rerank_candidates,
             },
             "rrf_k": RRF_K,
             "fusion_candidates": FUSION_CANDIDATES,
@@ -220,7 +229,7 @@ def write_report(report: dict, out_dir: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--benchmark", type=Path, default=Path("/eval/benchmark_v1.json"))
-    parser.add_argument("--modes", default="semantic,keyword,hybrid")
+    parser.add_argument("--modes", default="semantic,keyword,hybrid,rerank")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help="project title")
     parser.add_argument("--out", type=Path, default=Path("/eval/results"))
     args = parser.parse_args()

@@ -30,7 +30,7 @@ AnswerLLM = Annotated[LLMProvider, Depends(answer_llm)]
 class AnswerRequest(BaseModel):
     question: str = Field(min_length=1, max_length=1000)
     k: int | None = Field(default=None, ge=1, le=20, description="Passages shown to the LLM")
-    mode: SearchMode = "hybrid"
+    mode: SearchMode | None = Field(default=None, description="Default: answer_retrieval_mode")
 
 
 class ClaimOut(BaseModel):
@@ -116,7 +116,7 @@ async def ask(
             body.question,
             user_id=user.id,
             k=body.k or get_settings().answer_top_k,
-            mode=body.mode,
+            mode=body.mode or get_settings().answer_retrieval_mode,
         )
     except LLMRetryableError as exc:
         raise HTTPException(

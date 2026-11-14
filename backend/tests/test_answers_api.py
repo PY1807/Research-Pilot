@@ -104,7 +104,7 @@ async def test_answer_is_saved_as_a_run_with_evidence_report_and_events(
     assert run.status == RunStatus.SUCCEEDED
     assert run.config == {
         "kind": "answer",
-        "retrieval_mode": "hybrid",
+        "retrieval_mode": "rerank",  # answer_retrieval_mode default (M5)
         "k": 2,
         "provider": "fake",
         "model": "fake-model",

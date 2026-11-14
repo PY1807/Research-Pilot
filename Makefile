@@ -1,4 +1,4 @@
-.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest eval review-sheet apply-review eval-answers experiments-answers
+.PHONY: up down logs worker-logs migrate revision seed test lint format psql reset-db ingest-corpus reingest eval review-sheet apply-review eval-answers experiments-answers reingest-stuck
 
 API := http://localhost:8000/api
 
@@ -57,6 +57,9 @@ ingest-corpus: ## Create a project and upload every PDF in data/corpus/
 
 reingest: ## Re-chunk every uploaded source (after changing chunking code or settings)
 	docker compose exec api python -m app.scripts.reingest
+
+reingest-stuck: ## Re-queue only sources stuck in pending/processing (e.g. after a worker restart)
+	docker compose exec api python -m app.scripts.reingest --stuck
 
 eval: ## Score semantic, keyword and hybrid search on the benchmark (results in eval/results/)
 	docker compose exec api python -m app.evaluation.runner --benchmark /eval/$(or $(b),benchmark_v1.json)

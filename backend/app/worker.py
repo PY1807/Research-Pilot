@@ -28,4 +28,8 @@ celery_app.conf.update(
     # Ingestion jobs are long; take one message at a time so work spreads across workers.
     worker_prefetch_multiplier=1,
     broker_connection_retry_on_startup=True,
+    # With acks_late, a task whose worker died stays "unacknowledged" in Redis and is
+    # handed out again only after this timeout (Redis default: 1 hour). 15 minutes is
+    # well above the longest job (~2 min per paper) so a running task isn't duplicated.
+    broker_transport_options={"visibility_timeout": 900},
 )

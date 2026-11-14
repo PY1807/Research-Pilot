@@ -18,10 +18,11 @@ from statistics import mean
 from sqlalchemy import func, select
 
 from app.config import get_settings
-from app.db.models import DocumentChunk, ResearchProject, SourceDocument
+from app.db.models import DocumentChunk, IngestionStatus, ResearchProject, SourceDocument
 from app.db.session import SessionLocal, engine
 from app.embeddings import get_embedder
 from app.evaluation.metrics import Retrieved, average, percentile, score_question
+from app.evaluation.questions import load_questions
 from app.reranking import get_reranker
 from app.retrieval.service import FUSION_CANDIDATES, RRF_K, SEARCH_FUNCTIONS
 
@@ -154,7 +155,9 @@ def _markdown(report: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-async def run(spec: dict, modes: list[str], project_title: str) -> dict:
+async def run(
+    spec: dict, modes: list[str], project_title: str, allow_partial: bool = False
+) -> dict:
     """Score every question in `spec` with each mode. Database work only; file I/O lives
     in main() so this coroutine never blocks the event loop."""
     questions = spec["questions"]
@@ -170,6 +173,20 @@ async def run(spec: dict, modes: list[str], project_title: str) -> dict:
             .select_from(SourceDocument)
             .where(SourceDocument.project_id == project_id)
         )
+        not_ready = await session.scalar(
+            select(func.count())
+            .select_from(SourceDocument)
+            .where(
+                SourceDocument.project_id == project_id,
+                SourceDocument.status != IngestionStatus.READY,
+            )
+        )
+        # Scoring a half-ingested corpus gives numbers that look real but aren't.
+        if not_ready and not allow_partial:
+            raise SystemExit(
+                f"{not_ready} source(s) are not ready (still ingesting, failed, or stuck). "
+                "Wait, or run `make reingest-stuck`; pass --allow-partial to score anyway."
+            )
         chunks = await session.scalar(
             select(func.count())
             .select_from(DocumentChunk)
@@ -232,9 +249,11 @@ def main() -> None:
     parser.add_argument("--modes", default="semantic,keyword,hybrid,rerank")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help="project title")
     parser.add_argument("--out", type=Path, default=Path("/eval/results"))
+    parser.add_argument("--allow-partial", action="store_true", help="score a partial corpus")
     args = parser.parse_args()
-    spec = json.loads(args.benchmark.read_text())
-    report = asyncio.run(run(spec, args.modes.split(","), args.project))
+    spec, questions = load_questions(args.benchmark)
+    spec["questions"] = questions
+    report = asyncio.run(run(spec, args.modes.split(","), args.project, args.allow_partial))
     write_report(report, args.out)
 
 

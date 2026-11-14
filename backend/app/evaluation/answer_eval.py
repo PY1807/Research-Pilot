@@ -32,6 +32,7 @@ from app.db.session import SessionLocal, engine
 from app.embeddings import get_embedder
 from app.evaluation.answer_metrics import ANSWER_COLUMNS, aggregate, question_metrics
 from app.evaluation.metrics import relevant_units
+from app.evaluation.questions import load_questions
 from app.evaluation.runner import DEFAULT_PROJECT, _find_project
 from app.llm.base import (
     LLMError,
@@ -77,18 +78,6 @@ class Judgment(BaseModel):
     claims: list[ClaimVerdict] = Field(default_factory=list)
     correctness: Literal["correct", "partial", "incorrect"]
     correctness_reason: str = ""
-
-
-def load_questions(path: Path) -> tuple[dict, list[dict]]:
-    """Benchmark files have {id, type, question, relevant}; the M2 smoke file has
-    {id, question, source, pages}. Both become the benchmark shape."""
-    spec = json.loads(path.read_text())
-    questions = []
-    for q in spec["questions"]:
-        if "relevant" not in q:
-            q = {**q, "type": "fact", "relevant": [{"source": q["source"], "pages": q["pages"]}]}
-        questions.append(q)
-    return spec, questions
 
 
 async def _reference_passages(
@@ -361,7 +350,11 @@ def _spot_check_sheet(label: str, sheets: list[dict]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--benchmark", type=Path, default=Path("/eval/benchmark_v1.json"))
-    parser.add_argument("--mode", default="hybrid", choices=["hybrid", "semantic", "keyword"])
+    parser.add_argument(
+        "--mode",
+        default=get_settings().answer_retrieval_mode,
+        choices=["hybrid", "semantic", "keyword", "rerank"],
+    )
     parser.add_argument("--k", type=int, default=get_settings().answer_top_k)
     parser.add_argument("--label", default=None, help="experiment name, e.g. A-baseline")
     parser.add_argument("--questions", default="", help="comma-separated ids (default: all)")

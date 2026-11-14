@@ -21,7 +21,7 @@ def get(path: str):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--k", type=int, default=5)
-    parser.add_argument("--mode", default="hybrid", choices=["hybrid", "semantic", "keyword"])
+    parser.add_argument("--mode", default="hybrid", choices=["hybrid", "semantic", "keyword", "rerank"])
     parser.add_argument("--project", help="project id (default: the most recent project)")
     args = parser.parse_args()
 

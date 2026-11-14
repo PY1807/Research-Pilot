@@ -73,6 +73,9 @@ class Settings(BaseSettings):
 
     # Cited answers (M4): how many passages the LLM sees per question.
     answer_top_k: int = 8
+    # Retrieval for answers. Reranking won M5's experiment D by a wide margin, and an
+    # answer already waits seconds for the LLM, so its extra latency matters less here.
+    answer_retrieval_mode: str = "rerank"
 
     # Until auth lands in M8, every request acts as this single seeded user.
     dev_user_email: str = "dev@researchpilot.local"

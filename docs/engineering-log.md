@@ -71,3 +71,19 @@ One entry per working session: decision · reason · alternative · result · ne
 - **Before vs after clean-up (hit@5):** semantic 0.636 → 0.697, keyword 0.545 → 0.606, hybrid 0.818 → 0.818.
 - **Findings:** hybrid's edge depends on query wording; multi-source/conflict source recall is low (~0.3–0.4) in all modes (diversity problem, candidate fix: MMR); search scores can't detect unanswerable questions.
 - **Next:** user reviews labels (`eval/review/benchmark_v1_review.md`), re-run `make eval` on reviewed labels; M4 needs the LLM decision.
+
+## 2026-11-14 — M4 Cited answers (code) + experiment B
+
+- **Decision (user):** Gemini API for answers (free tier, multimodal) and Grok for the second model. Label review deferred until after M4; all numbers stay provisional.
+- **Finding:** xAI Grok has no standing free API tier (billed per token, checked 2026-11). Groq (different company) has a free tier with the same OpenAI-compatible API, so both are presets of one `OpenAICompatibleProvider`; whichever has a key is used.
+- **Decision:** `LLMProvider` adapter over plain `httpx` (no vendor SDKs). Fallback chain moves on only for rate limits/outages (429, 5xx, timeouts), never for bad keys or requests.
+  **Reason:** free-tier rate limits are the main operational risk; config errors must stay visible.
+- **Decision:** JSON output validated with Pydantic (one retry quoting the error) instead of provider-enforced JSON schemas.
+  **Reason:** Gemini and OpenAI-style APIs support different schema subsets; this works identically everywhere.
+- **Decision:** answers cite passage labels (`S1…Sn`), not chunk UUIDs. Unknown labels are dropped and counted (`dropped_citations`), and claims without a citation are flagged in the UI.
+  **Reason:** short labels are easy for the model to copy and trivial to validate; UUIDs invite typos.
+- **Decision:** answers are saved as `research_runs` (`config.kind = "answer"`) with `evidence_items`, `reports` and `run_events`. No migration needed.
+- **Decision:** judge = a different model where possible (`LLM_JUDGE_PROVIDERS=grok,groq,gemini`); correctness judged against the labelled reference pages, since there are no written reference answers.
+- **Decision:** answer-eval results JSON holds metrics, verdicts and (paper, page) references only; claim text and quotes go to the git-ignored spot-check sheet in `eval/review/`.
+- **Result:** 98 backend + 12 frontend tests; lint clean. LLM experiments (A, C, exit test) not run yet: no API key in `.env`.
+- **Incident:** experiment B (chunk sizes) was interrupted when the session ended, leaving the corpus half re-chunked at 800 characters. Restored to 1200 (1,198 chunks; M3 had 1,202, difference not yet explained). B to be re-run.

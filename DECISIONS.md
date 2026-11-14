@@ -303,6 +303,82 @@ What we give up: 37 + 10 questions is small. One question moves hit@5 by about 3
 
 ---
 
+## LLM providers: Gemini + Grok/Groq behind one adapter (added in M4)
+
+**What it does in ResearchPilot:**
+Turns retrieved passages into a written answer, and in evaluation acts as a judge that checks those answers. The app talks to one `LLMProvider` interface. Gemini, xAI Grok and Groq are adapters behind it, chosen and ordered in `.env`.
+
+**Why it helps / what it adds:**
+- **Free to run.** Gemini's free tier covers development and the benchmark. Tokens are still counted and costed from a price table, so moving to a paid tier later gives honest cost numbers from the same logs.
+- **Multimodal ready.** Gemini reads images and PDFs natively. Requests already carry attachments, which is the path for the known weak spot from M1: figures and tables extracted as jumbled text.
+- **Survives rate limits.** Free tiers allow only a few requests per minute. A fallback chain moves to the next provider on a rate limit or outage (HTTP 429/5xx, timeouts), but stops on a bad key or bad request, so configuration mistakes aren't hidden.
+- **Honest evaluation.** The judge prefers a *different* model from the answerer (`LLM_JUDGE_PROVIDERS=grok,groq,gemini`). A model grading its own answers tends to agree with itself.
+- **Tests need no key.** A `FakeProvider` returns scripted replies; tests also blank all keys so they can never call a real API.
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Claude / OpenAI APIs | Best quality, but no free API tier; the user has Claude Pro, which doesn't include API credits. The adapter makes adding one a ~60-line class |
+| Local Ollama | Free and private, but the user's laptop has 8 GB RAM and already runs Docker, Postgres, Redis and Celery; a useful model wouldn't fit alongside them |
+| Vendor SDKs (`google-genai`, `openai`) | Convenient, but two big dependencies that change often. Plain `httpx` keeps every request and response shape visible in `providers.py` |
+| LangChain / LiteLLM | Unify many providers, but hide the prompt and the HTTP call, which this project is meant to make inspectable |
+| Provider-enforced JSON schemas | Gemini and OpenAI-style APIs support different subsets of JSON Schema. Asking for "a JSON object", describing the shape in the prompt and validating with Pydantic works the same everywhere; one retry quotes the validation error |
+
+**Grok vs Groq:** these are different companies. **xAI Grok** (`api.x.ai`) had no standing free API tier when checked (2026-11); it's billed per token. **Groq** (`api.groq.com`) hosts open models such as Llama on a free tier. Both use the OpenAI `/chat/completions` format, so one `OpenAICompatibleProvider` serves both, with a preset each. Model names change often, so all are set in `.env`.
+
+What we give up: free tiers are slow at scale (pacing between benchmark questions), their model versions get retired, and the provider can use free-tier prompts to improve its products, which is fine for a public-paper corpus but not for private documents.
+
+**How it works underneath:**
+- An LLM API is a single HTTP POST: a system prompt (rules), a user message (question + passages), and settings such as `temperature` (0 = as repeatable as possible). The reply is text plus a token count; billing is per token, roughly 4 characters of English each.
+- "Thinking" models (Gemini 2.5) spend hidden reasoning tokens before answering. They're billed as output, so we count them, and `max_output_tokens` is generous so the reasoning doesn't eat the whole budget.
+- `FallbackProvider` is a loop over providers that catches only `LLMRetryableError`.
+
+**Where to look:** `backend/app/llm/` (`base.py` interface, `providers.py` adapters, `structured.py` JSON validation + cost, `factory.py` building chains from settings), `.env.example`
+
+**Try it yourself:** add `GEMINI_API_KEY` to `.env`, run `make up`, then in http://localhost:8000/docs try `POST /api/projects/{id}/answers/`. The `usage` field shows which provider answered and how many tokens it took.
+
+---
+
+## Cited answers and LLM-as-judge evaluation (added in M4)
+
+**What it does in ResearchPilot:**
+Answers a question from the project's own sources. Every sentence carries citations that link to the exact PDF page, and the answer says "not enough evidence" instead of guessing. A judge LLM then scores those answers on the benchmark.
+
+**Why it helps / what it adds:**
+- **Citations are checked, not trusted.** Passages are labelled `S1…Sn` in the prompt, and the model must return JSON claims citing those labels. Any citation to a label it was never shown is dropped and counted: a direct measure of invented sources.
+- **Abstention is a feature.** M3 showed that search scores can't tell "covered" from "not covered" (problem 37). Now the LLM decides from the passages' content, and the benchmark's unanswerable questions measure whether it gets that right.
+- **Runs are saved.** Each answer becomes a `research_run` with its passages (`evidence_items`), claims and citations (`report`) and steps (`run_events`, numbers only), so M6's agent builds on the same tables.
+- **Prompt-injection defence, layer 1.** Passage text is escaped (so `</passage>` can't close its own tag) and the system prompt calls it untrusted data. M6b adds attack documents to test this.
+
+**Metrics, in plain words:**
+| Metric | Question it answers |
+|---|---|
+| abstention_correct | Did it answer when it should, and refuse when it should? |
+| citation_validity | What share of citations point at passages the model was actually shown? |
+| cited_claim_rate | What share of claims carry a citation at all? |
+| cited_page_precision | What share of cited passages are on a page the labeller marked relevant? (no LLM needed) |
+| support_rate | Judge: does the cited passage really say what the claim says? |
+| correctness | Judge: does the whole answer match the labelled reference pages? |
+
+**Trade-offs and alternatives:**
+| Option | Why not (for now) |
+|---|---|
+| Ragas / DeepEval | Ready-made faithfulness and correctness metrics, but they hide the judge prompt and add a large dependency. Our judge is one prompt in `answer_eval.py` |
+| Human-written reference answers | The gold standard for correctness, but writing 37 takes hours. The judge uses the labelled pages as the reference instead, so correctness is only as good as the labels (still draft) |
+| Free-text answers with inline [1] markers | Easier for the model, but citations would need parsing and couldn't be validated per claim |
+
+What we give up: LLM judges make mistakes and can be lenient, so the exit test includes a human spot-check of citations. The results JSON holds no corpus text (it's committed); the spot-check sheet with quotes goes to git-ignored `eval/review/`.
+
+**How it works underneath:**
+- Retrieve the top k passages (hybrid by default) → build a prompt with `<question>` and labelled `<passage>` blocks → ask for `{answerable, claims[{text, citations}], missing_information}` → validate with Pydantic, retrying once with the error → normalise labels (`[s1]` → `S1`), drop unknown ones → map labels to (source, page) for links.
+- No passages at all means no LLM call: there's nothing to ground an answer in.
+
+**Where to look:** `backend/app/answers/` (`prompts.py`, `service.py`, `router.py`), `backend/app/evaluation/answer_eval.py`, `backend/app/evaluation/answer_metrics.py`, `frontend/src/components/AskPanel.tsx`, `AnswerView.tsx`
+
+**Try it yourself:** `make eval-answers b=smoke_questions.json`, then open `eval/results/answers_latest.md` and the spot-check sheet in `eval/review/`.
+
+---
+
 # Problems solved
 
 Real problems hit while building, and how each was fixed. Each entry has the problem, the fix in plain words, and the technical fix.
@@ -529,3 +605,30 @@ Real problems hit while building, and how each was fixed. Each entry has the pro
 - **Problem:** `eval/review/benchmark_v1_review.md` quotes ~400 characters from each of 383 passages. It was pushed to the public repo with the M3 commit, although the corpus is meant to stay local.
 - **Simple fix:** removed it from git entirely, as if it had never been committed; it's regenerated from the database with `make review-sheet`.
 - **Technical fix:** rewrote the M3 commit without the file (`git reset --soft` to the previous commit, re-commit), added `eval/review/` to `.gitignore`, and force-pushed `main` with `--force-with-lease`. GitHub can still serve the old commit by its exact ID for a while (cached, unreferenced commits) until its garbage collection runs.
+
+## Session 2 (2026-11-14): M4, M5
+
+### Environment
+
+**40. `docker-credential-desktop` not found, again**
+- **Problem:** `make up` failed to build with `exec: "docker-credential-desktop": executable file not found in $PATH`.
+- **Simple fix:** the PATH fix from problem 2 only applies to interactive terminals. The shell Claude Code uses didn't have Docker's folder on its PATH.
+- **Technical fix:** prefix commands with `export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"`. Permanent option: add the same line to `~/.zprofile` (read by login shells, interactive or not).
+
+### LLMs
+
+**41. "Grok free API" doesn't exist (any more)**
+- **Problem:** the plan was to use Grok's free API as the second model.
+- **Finding:** xAI's API is billed per token, with no standing free tier (checked 2026-11). Groq (a different company) has a free tier with the same OpenAI-compatible API.
+- **Fix:** one `OpenAICompatibleProvider` with two presets, `grok` and `groq`; whichever has a key in `.env` is used. Changing provider is a config change.
+
+**42. Ruff flagged a `timeout` parameter on an async function (ASYNC109)**
+- **Technical fix:** renamed it `timeout_seconds`. The rule exists because a `timeout` argument suggests the function enforces it with `asyncio.timeout`; ours only passes it to `httpx`, so the clearer name is the honest one.
+
+### Background jobs
+
+**43. Re-ingestion got stuck with papers "processing" forever**
+- **Problem:** after re-chunking, 8 of 16 papers stayed in "processing", the queue was empty, and the worker was idle.
+- **Simple fix:** editing backend code restarts the worker, which killed the running jobs. Redis then held those jobs back for an hour before handing them out again. We cleared the held jobs and re-queued the 8 papers.
+- **Technical fix:** the worker runs under `watchfiles`, which restarts Celery on every `.py` change, killing in-flight tasks. Because of `task_acks_late=True`, the killed tasks weren't lost: Redis keeps unacknowledged tasks in an `unacked` hash and redelivers them only after the **visibility timeout** (default 3600 s). Fix: `redis-cli del unacked unacked_index`, then `ingest_source_task.delay()` for each source still in `processing`. An interrupted session earlier had left the corpus half re-chunked at 800 characters the same way, which would have skewed eval numbers silently.
+- **Lesson:** don't edit backend code while a long ingestion is running, and check `source_documents.status` before trusting eval numbers.

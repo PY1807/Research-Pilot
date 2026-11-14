@@ -11,11 +11,11 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 
 | | |
 |---|---|
-| **Current milestone** | M4 — Cited answers + experiments A–C (not started) |
-| **Next action** | User reviews benchmark labels in `eval/review/benchmark_v1_review.md`, then `make apply-review` + `make eval`. Then M4 (needs LLM decision) |
-| **Blocked on (user)** | Label review (~2–3 h, `eval/review/`) · LLM decision (needed by M4) |
+| **Current milestone** | M4 — Cited answers + experiments A–C (🟨 code done; LLM experiments wait on an API key) |
+| **Next action** | User adds `GEMINI_API_KEY` (+ `GROQ_API_KEY` or `GROK_API_KEY` for the judge) to `.env`, `make up`, then `make eval-answers b=smoke_questions.json` (exit test) and `make experiments-answers` (A, C). Then M5 |
+| **Blocked on (user)** | LLM API keys in `.env` · M4 spot-check of 5 citations · Label review (~2–3 h, `eval/review/`; deferred by the user, numbers stay provisional) |
 | **Test corpus** | 16 papers on RAG vs long-context LLMs in `data/corpus/` (local only, never committed; list in `data/corpus/README.md`) |
-| **Last session** | 2026-10-25: M3 done (exit test passed): hybrid search, eval harness, 37-question benchmark (draft labels), data clean-up |
+| **Last session** | 2026-11-14: M4 built (LLM adapter, cited answers API + Ask UI, answer eval with LLM judge); M5 reranking built, experiment D running |
 
 ### Milestone status
 
@@ -24,8 +24,8 @@ This file is the working plan for building ResearchPilot. It is based on *Resear
 | M0 | Setup | ✅ done | 1 |
 | M1 | PDF ingestion | ✅ done | 1 |
 | M2 | Semantic search + minimal UI | ✅ done | 1 |
-| M3 | Hybrid search + eval harness | ✅ done (labels await review) | 1 |
-| M4 | Cited answers + experiments A–C | ⬜ | 1 |
+| M3 | Hybrid search + eval harness | ✅ done (labels await review, deferred) | 1 |
+| M4 | Cited answers + experiments A–C | 🟨 code done, LLM runs pending a key | 1 |
 | M5 | Reranking (cuttable) | ⬜ | 0.5 |
 | M6 | Agent core | ⬜ | 2 |
 | M7 | arXiv connector + verified report | ⬜ | 1 |
@@ -41,6 +41,7 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | Date | Milestone | Done | Next |
 |---|---|---|---|
 | 2026-10-25 | Planning | Read blueprint, wrote plan, chose FastAPI, auth approach, milestone schedule | Start M0 |
+| 2026-11-14 | M4 | LLM decision (Gemini answers; Grok/Groq judge), `app/llm/` adapter + fallback + cost accounting, `POST /answers/` with validated citations, runs saved to research_runs/evidence/report/events, Ask panel, `make eval-answers` with LLM judge, 98 backend + 12 frontend tests, DECISIONS (LLM providers, cited answers) | Add keys, run exit test + A/C |
 | 2026-10-25 | M3 | Full-text search + RRF hybrid (default), eval harness (`make eval`, review sheet, apply-review), benchmark-v1 (37 q, draft), header/table clean-up, weighted RRF experiment, mode toggle in UI, 69 tests, DECISIONS (hybrid, eval) | User label review; M4 |
 | 2026-10-25 | M2 | bge-small embeddings (FastEmbed), pgvector HNSW, search API, PDF endpoint, Tailwind UI (projects, upload, live status, search), smoke test 7/10 @5, 42 tests, DECISIONS (embeddings, pgvector) | Review smoke questions; start M3 |
 | 2026-10-25 | M1 | Redis + Celery worker, projects/sources API, page-aware extraction + chunking, `make ingest-corpus` / `make reingest`, 25 tests, DECISIONS (Redis, Celery). Fixed tiny chunks and ligatures found on real data | Start M2 |
@@ -54,7 +55,8 @@ Status keys: ⬜ not started · 🟨 in progress · ✅ done (exit test passed) 
 | 2026-10-25 | Auth: `user_id` on every table from M0, login UI in M8, guest demo account | Protects LLM budget, keeps PDFs private, no schema rewrite later |
 | 2026-10-25 | Milestone-based schedule, not calendar days | User's availability varies day to day |
 | 2026-10-25 | All work pushed to the user's GitHub repo (account `PY1807`, SSH); deployed in M10 | Public portfolio piece; history shows how it was built |
-| — | LLM provider | **Pending.** Proposal: local Ollama for dev, Claude API for eval/demo. Needed by M4. |
+| 2026-11-14 | LLM: Gemini (free tier, multimodal) answers; Grok or Groq judges; behind `LLMProvider` with fallback | Free; Gemini reads images/PDFs for later figure/table work; a different judge model avoids self-grading; Ollama ruled out by 8 GB RAM. xAI Grok has no free API tier, so Groq is the free OpenAI-compatible option |
+| 2026-11-14 | Label review deferred until after M4 | User's call; all eval numbers stay marked provisional |
 
 ---
 
@@ -93,6 +95,9 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 | The fact-checker | Citation check: each claim compared against its cited passage |
 | The notebook | Run trace: every step saved so you can see how the answer was built |
 | The mailroom | Task queue: the API drops a job in Redis and replies at once; a Celery worker picks it up and does the slow work (reading PDFs, later whole research runs) |
+| The writer | Cited answers: the LLM answers only from the passages it's shown, labels every sentence with the passage it came from (`S1`, `S2`…), and says "not enough evidence" when that's the honest answer. Citations to passages it wasn't shown are thrown out |
+| The switchboard | LLM adapter: Gemini, Grok and Groq plug into one interface; if one is rate-limited, the next takes over |
+| The examiner | LLM judge: a *different* model checks each answer against its cited pages and the labelled reference pages; `make eval-answers` scores the result |
 | The exam | The benchmark: 37 fixed questions with labelled answer pages; `make eval` scores every search method after each change |
 
 ---
@@ -109,7 +114,7 @@ A **bounded agent** plans sub-questions, retrieves evidence, spots gaps, runs fo
 | Database | PostgreSQL 16 + `pgvector` | Relational data and vectors in one DB |
 | Keyword search | Postgres full-text search (`tsvector` + GIN) | Hybrid search with no extra service |
 | Hybrid fusion | Reciprocal Rank Fusion (RRF) | Simple, no score calibration needed |
-| LLM | `LLMProvider` adapter. **Provider pending** (see decision log). A fake provider is used for tests | Provider logic isolated; secrets server-side |
+| LLM | `LLMProvider` adapter over plain `httpx`: Gemini (answers, multimodal), xAI Grok or Groq (judge, fallback). Fake provider for tests | Free tiers; provider logic isolated; secrets server-side in `.env` |
 | Embeddings | Local `sentence-transformers` model behind an `Embedder` adapter | Free; swappable if quality falls short |
 | Reranker | Local cross-encoder behind an adapter | Only added after baseline is measured |
 | PDF parsing | `pypdf` (keeps page boundaries). OCR out of scope | Detect and report extraction failures clearly |
@@ -235,15 +240,16 @@ POST /api/runs/{id}/cancel/         cancel run
 - [x] Claude drafts 30–40 benchmark questions (direct facts, multi-source, conflicting, unanswerable): 37 in `eval/benchmark_v1.json`
 - [x] Data clean-up measured on the benchmark: repeated headers/footers removed, number-only chunks dropped
 - [ ] 🧑 **User reviews the draft labels (`eval/review/benchmark_v1_review.md`, ~2–3 h)**
-- 🧑 **LLM decision needed before M4**
 - **Exit test:** `make eval` prints a comparison table for semantic vs hybrid search.
 
 ### M4 — Cited answers + experiments A–C
-- [ ] `LLMProvider` adapter with the chosen provider + fake provider for tests; token/cost accounting
-- [ ] `answer(question)`: retrieve → generate an answer that cites chunk IDs → render citations as page links
-- [ ] Prompt treats retrieved text as untrusted data
-- [ ] Experiments A (baseline), B (chunk sizes), C (hybrid) recorded in `eval/results/`
-- [ ] Citation-support and answer-correctness metrics added
+- [x] `LLMProvider` adapter (Gemini, Grok, Groq, fallback chain) + fake provider for tests; token/cost accounting
+- [x] `answer(question)`: retrieve → generate an answer that cites passage labels → validate citations → render as page links (`POST /api/projects/{id}/answers/`, Ask panel)
+- [x] Prompt treats retrieved text as untrusted data (escaped, fenced, stated in the system prompt)
+- [x] Citation-support and answer-correctness metrics added (`make eval-answers`, LLM judge)
+- [ ] Experiment B (chunk sizes) on retrieval metrics (first attempt interrupted; see DECISIONS problem 43). Re-run with the LLM experiments
+- [ ] 🧑 Experiments A (baseline: semantic) and C (hybrid) on answers: `make experiments-answers` (needs an API key)
+- [ ] 🧑 Exit test: `make eval-answers b=smoke_questions.json`, then spot-check 5 citations in `eval/review/`
 - **Exit test:** cited answers for the 10 test questions; user spot-checks that 5 citations actually support their claims.
 
 ### M5 — Reranking ✂️ cuttable
@@ -372,6 +378,7 @@ This project is also how the user learns a new stack. The user knows full-stack 
 | Embeddings | M2 | How text becomes a list of numbers where similar meaning = nearby numbers |
 | pgvector | M2 | Storing those vectors in Postgres and finding nearest neighbours fast (HNSW index) |
 | RAG | M2–M4 | Retrieve relevant passages first, then have the LLM answer only from them |
+| LLM APIs | M4 | Prompts, tokens, temperature, structured (JSON) output, rate limits, LLM-as-judge |
 
 Likely new too, explained the same way unless the user says they already know it: full-text search + RRF (M3), retrieval metrics like Recall@k (M3), cross-encoder reranking (M5), agent loops and tool calling (M6a), Server-Sent Events (M6b).
 

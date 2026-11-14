@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.5-flash"  # 2.5 closed to new users by 2026-11
     # xAI Grok (OpenAI-compatible). Paid per token; no standing free tier as of 2026-11.
     grok_api_key: str = ""
     grok_base_url: str = "https://api.x.ai/v1"

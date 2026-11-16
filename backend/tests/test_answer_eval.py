@@ -176,3 +176,17 @@ async def test_unanswerable_questions_skip_the_judge(session, project_id):
 
     assert record["scores"] == {"abstention_correct": 1.0}
     assert judge.requests == []
+
+
+def test_checkpoint_keeps_finished_questions_and_drops_errors(tmp_path):
+    from app.evaluation.answer_eval import _append_checkpoint, _load_checkpoint
+
+    path = tmp_path / "run.checkpoint.jsonl"
+    _append_checkpoint(path, {"id": "q1", "scores": {"correctness": 1.0}}, {"id": "q1"})
+    _append_checkpoint(path, {"id": "q2", "error": "503", "scores": {}}, {"id": "q2"})
+
+    done = _load_checkpoint(path)
+
+    assert list(done) == ["q1"]  # q2 errored, so a resumed run retries it
+    assert done["q1"]["record"]["scores"] == {"correctness": 1.0}
+    assert _load_checkpoint(tmp_path / "missing.jsonl") == {}

@@ -239,7 +239,30 @@ async def _evaluate_question(
     return record, sheet
 
 
-async def run(questions: list[dict], args) -> tuple[list[dict], list[dict], str]:
+def _load_checkpoint(path: Path) -> dict[str, dict]:
+    """Questions already finished by an interrupted run of the same label, by id.
+    Errored questions are not kept, so a resumed run retries them."""
+    if not path.exists():
+        return {}
+    done = {}
+    for line in path.read_text().splitlines():
+        item = json.loads(line)
+        if "error" not in item["record"]:
+            done[item["record"]["id"]] = item
+    return done
+
+
+def _append_checkpoint(path: Path, record: dict, sheet: dict) -> None:
+    with path.open("a") as f:
+        f.write(json.dumps({"record": record, "sheet": sheet}) + "\n")
+
+
+async def run(
+    questions: list[dict], args, checkpoint: Path, done: dict[str, dict]
+) -> tuple[list[dict], list[dict], str]:
+    """Answer and judge each question. Every finished question is appended to
+    `checkpoint` right away, so a run cut off by sleep or a power cut resumes where it
+    stopped instead of starting over (and spending the free-tier quota again)."""
     answer_llm = get_answer_llm()
     judge_llm = None if args.no_judge else get_judge_llm()
     async with SessionLocal() as session:
@@ -248,6 +271,11 @@ async def run(questions: list[dict], args) -> tuple[list[dict], list[dict], str]
         await asyncio.to_thread(get_embedder().embed_query, "warm up")
         records, sheets = [], []
         for n, q in enumerate(questions, start=1):
+            if q["id"] in done:
+                records.append(done[q["id"]]["record"])
+                sheets.append(done[q["id"]]["sheet"])
+                print(f"[{n}/{len(questions)}] {q['id']}: resumed from checkpoint", flush=True)
+                continue
             try:
                 record, sheet = await _evaluate_question(
                     session, project_id, q, answer_llm, judge_llm, args
@@ -259,6 +287,7 @@ async def run(questions: list[dict], args) -> tuple[list[dict], list[dict], str]
                 sheet = {"id": q["id"], "question": q["question"], "error": str(exc)[:300]}
             records.append(record)
             sheets.append(sheet)
+            await asyncio.to_thread(_append_checkpoint, checkpoint, record, sheet)
             status = (
                 record.get("error")
                 or record.get("correctness")
@@ -363,6 +392,7 @@ def main() -> None:
     parser.add_argument("--no-judge", action="store_true", help="skip the judge LLM calls")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help="project title")
     parser.add_argument("--out", type=Path, default=Path("/eval"))
+    parser.add_argument("--fresh", action="store_true", help="ignore an earlier checkpoint")
     args = parser.parse_args()
 
     spec, questions = load_questions(args.benchmark)
@@ -373,8 +403,17 @@ def main() -> None:
         questions = questions[: args.limit]
     label = args.label or f"{args.mode}-k{args.k}"
 
+    review_dir = args.out / "review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    # Same label + same question set = same run, so it can be resumed.
+    checkpoint = review_dir / f"answers__{label}__{args.benchmark.stem}.checkpoint.jsonl"
+    done = {} if args.fresh else _load_checkpoint(checkpoint)
+    if done:
+        print(f"Resuming: {len(done)} question(s) already done in {checkpoint.name}")
+    elif checkpoint.exists():
+        checkpoint.unlink()
     try:
-        records, sheets, judge_name = asyncio.run(run(questions, args))
+        records, sheets, judge_name = asyncio.run(run(questions, args, checkpoint, done))
     except LLMNotConfigured as exc:
         raise SystemExit(str(exc)) from None
 
@@ -417,15 +456,15 @@ def main() -> None:
 
     stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     stem = f"answers__{label}__{stamp}"
-    results_dir, review_dir = args.out / "results", args.out / "review"
+    results_dir = args.out / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
-    review_dir.mkdir(parents=True, exist_ok=True)
     markdown = _markdown(report)
     (results_dir / f"{stem}.json").write_text(json.dumps(report, indent=1))
     (results_dir / f"{stem}.md").write_text(markdown)
     (results_dir / "answers_latest.md").write_text(markdown)
     (review_dir / f"{stem}__spotcheck.md").write_text(_spot_check_sheet(label, sheets))
     print(markdown)
+    checkpoint.unlink(missing_ok=True)  # the run is complete; results are saved
     print(f"Saved {results_dir / stem}.json/.md and {review_dir / stem}__spotcheck.md")
 
 

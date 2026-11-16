@@ -46,4 +46,9 @@ def get_answer_llm() -> LLMProvider:
 
 
 def get_judge_llm() -> LLMProvider:
-    return build_chain(get_settings().llm_judge_providers)
+    """The judge chain, or the answer chain when no judge key is set. Results record
+    which model judged, so self-grading is visible in the report."""
+    try:
+        return build_chain(get_settings().llm_judge_providers)
+    except LLMNotConfigured:
+        return get_answer_llm()

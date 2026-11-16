@@ -212,3 +212,16 @@ def test_cost_uses_the_price_table_and_defaults_to_free(monkeypatch):
 
     monkeypatch.setattr(get_settings(), "llm_prices_per_million", {"paid-model": (0.3, 0.5)})
     assert cost_usd(response) == pytest.approx(0.3 + 0.25)
+
+
+def test_judge_never_falls_back_to_the_answer_model_when_a_judge_key_exists(monkeypatch):
+    from app.config import get_settings
+    from app.llm.factory import get_judge_llm
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "gemini_api_key", "g")
+    monkeypatch.setattr(settings, "groq_api_key", "q")
+    assert get_judge_llm().name == "groq"  # not "groq+gemini"
+
+    monkeypatch.setattr(settings, "groq_api_key", "")
+    assert get_judge_llm().name == "gemini"  # only key left: self-judging, but visible

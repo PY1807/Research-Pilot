@@ -53,7 +53,9 @@ class Settings(BaseSettings):
     # skipped. Answers prefer Gemini; the citation judge prefers a *different* model, so
     # the eval isn't a model grading its own answers. "fake" is the scripted test double.
     llm_answer_providers: str = "gemini,grok,groq"
-    llm_judge_providers: str = "grok,groq,gemini"
+    # The judge never falls back to the answer model (that would be self-grading); it
+    # waits out rate limits instead. Gemini judges only when no other key is set.
+    llm_judge_providers: str = "grok,groq"
     llm_timeout_seconds: float = 60.0
 
     gemini_api_key: str = ""

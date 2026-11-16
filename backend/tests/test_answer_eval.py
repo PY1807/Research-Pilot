@@ -190,3 +190,12 @@ def test_checkpoint_keeps_finished_questions_and_drops_errors(tmp_path):
     assert list(done) == ["q1"]  # q2 errored, so a resumed run retries it
     assert done["q1"]["record"]["scores"] == {"correctness": 1.0}
     assert _load_checkpoint(tmp_path / "missing.jsonl") == {}
+
+
+def test_eval_pins_the_first_provider_of_a_fallback_chain():
+    from app.evaluation.answer_eval import _first_provider
+    from app.llm.providers import FallbackProvider
+
+    gemini, groq = FakeProvider([], name="gemini"), FakeProvider([], name="groq")
+    assert _first_provider(FallbackProvider([gemini, groq])) is gemini
+    assert _first_provider(groq) is groq
